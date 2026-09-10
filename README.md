@@ -22,7 +22,8 @@ The catalog page reads real data from `GET /api/travel/products`; no product pri
 ## Status
 
 - Vue/Vite client: implemented.
-- Responsive PC UI: implemented baseline.
+- Responsive PC official website: implemented with home, destination listing, and product detail pages.
+- Middle East positioning: Dubai, Abu Dhabi, Doha, and Riyadh destination entries are included.
 - Tauri 2 desktop shell: implemented baseline.
-- Product detail, traveler, cart, checkout and order UX: next development stage.
+- Checkout and order UX: next development stage.
 - Full sandbox E2E: pending deployed Travel API and test database.
