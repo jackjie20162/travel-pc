@@ -11,6 +11,11 @@ export default defineConfig(({ mode }) => {
       port: 1420,
       strictPort: true,
       proxy: {
+        // 本地存储模式的媒体文件（/uploads/...）代理到 merchant-upload-api
+        '/uploads': {
+          target: 'http://localhost:9208',
+          changeOrigin: true,
+        },
         '/api': {
           target: apiTarget,
           changeOrigin: true,

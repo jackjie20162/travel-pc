@@ -124,6 +124,7 @@ import {
   productVideo,
   splitCsv,
 } from '../utils/product.js'
+import { resolveMediaList } from '../utils/media.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -146,7 +147,7 @@ const destinationSlug = computed(() => {
 const fallbackImage = computed(() => destinations.find((item) => item.slug === destinationSlug.value)?.image || destinations[0].image)
 const cover = computed(() => productCover(product.value, fallbackImage.value))
 const gallery = computed(() => {
-  const images = [cover.value, ...splitCsv(product.value?.images)].filter(Boolean)
+  const images = [cover.value, ...resolveMediaList(splitCsv(product.value?.images))].filter(Boolean)
   return [...new Set(images)]
 })
 const sideImages = computed(() => {

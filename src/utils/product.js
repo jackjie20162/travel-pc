@@ -1,3 +1,5 @@
+import { resolveMediaUrl } from './media.js'
+
 export function productTitle(product) {
   return product?.title || product?.name || '中东精选体验'
 }
@@ -11,7 +13,7 @@ export function productDescription(product) {
 }
 
 export function productCover(product, fallback) {
-  return product?.coverImage || product?.cover_image || firstImage(product?.images) || fallback
+  return resolveMediaUrl(product?.coverImage || product?.cover_image || firstImage(product?.images)) || fallback
 }
 
 export function productPrice(product) {
@@ -63,5 +65,5 @@ export function splitCsv(value) {
 }
 
 export function productVideo(product) {
-  return product?.videoUrl || product?.video_url || ''
+  return resolveMediaUrl(product?.videoUrl || product?.video_url || '')
 }
