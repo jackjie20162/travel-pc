@@ -38,11 +38,30 @@ export function firstImage(images) {
     .find(Boolean) || ''
 }
 
+function normalizeMediaItem(item) {
+  if (typeof item === 'string') return item
+  if (item && typeof item === 'object') return item.url || item.text || ''
+  return ''
+}
+
 export function splitCsv(value) {
   if (!value) return []
-  if (Array.isArray(value)) return value.filter(Boolean)
-  return String(value)
+  if (Array.isArray(value)) return value.map(normalizeMediaItem).filter(Boolean)
+  const str = String(value).trim()
+  if (str.startsWith('[')) {
+    try {
+      const parsed = JSON.parse(str)
+      if (Array.isArray(parsed)) return parsed.map(normalizeMediaItem).filter(Boolean)
+    } catch (error) {
+      // 落回逗号解析
+    }
+  }
+  return str
     .split(',')
     .map((item) => item.trim())
     .filter(Boolean)
+}
+
+export function productVideo(product) {
+  return product?.videoUrl || product?.video_url || ''
 }

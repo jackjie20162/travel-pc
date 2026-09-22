@@ -67,6 +67,12 @@
             <h2>预订须知</h2>
             <p>{{ product.bookingNotice }}</p>
           </section>
+
+          <section v-if="videoUrl" class="detail-section">
+            <h2>宣传视频</h2>
+            <video v-if="!videoIsHls" :src="videoUrl" controls playsinline preload="metadata" style="width:100%;max-height:480px;border-radius:12px;background:#000"></video>
+            <a v-else :href="videoUrl" target="_blank" rel="noopener">播放宣传视频（HLS）▶</a>
+          </section>
         </article>
 
         <aside class="booking-panel">
@@ -115,6 +121,7 @@ import {
   productDestination,
   productPrice,
   productTitle,
+  productVideo,
   splitCsv,
 } from '../utils/product.js'
 
@@ -155,6 +162,8 @@ const highlights = computed(() => {
 const price = computed(() => productPrice(product.value))
 const currency = computed(() => productCurrency(product.value))
 const priceText = computed(() => formatPrice(price.value))
+const videoUrl = computed(() => productVideo(product.value))
+const videoIsHls = computed(() => /\.m3u8($|\?)/i.test(videoUrl.value))
 const canBook = computed(() => selectedPackageId.value && selectedDate.value && quantity.value > 0)
 
 function nextDate(offset) {
