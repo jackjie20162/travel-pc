@@ -265,6 +265,9 @@ button:disabled {
 }
 
 .trust-strip {
+  position: relative;
+  /* 负 margin 叠进 position:relative 的 hero，需提升层级避免被 hero 背景遮盖顶部 */
+  z-index: 2;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 0;
