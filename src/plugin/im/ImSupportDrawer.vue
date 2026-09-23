@@ -5,6 +5,7 @@
         <div class="im-head-title">
           在线客服
           <span class="im-conn" :class="s.status">{{ connText }}</span>
+          <span v-if="!connected" class="im-offline-tip">未连接，消息将改走接口发送</span>
         </div>
         <button type="button" class="im-close" title="关闭" @click="close">×</button>
       </header>
@@ -96,11 +97,11 @@
       </div>
 
       <footer class="im-composer">
-        <label class="im-img-btn" :class="{ disabled: s.uploading || !connected }" title="发送图片">
+        <label class="im-img-btn" :class="{ disabled: s.uploading }" title="发送图片">
           <input
             type="file"
             accept="image/*"
-            :disabled="s.uploading || !connected"
+            :disabled="s.uploading"
             style="display: none"
             @change="onPickImage"
           />
@@ -152,7 +153,8 @@ const scrollEl = ref(null)
 const preview = ref('')
 
 const connected = computed(() => s.status === 'online')
-const canSend = computed(() => connected.value && draft.value.trim().length > 0)
+// 断线也可发送（退回 HTTP 接口），故不再以 connected 作为发送前置
+const canSend = computed(() => draft.value.trim().length > 0)
 const statusTextMap = {
   idle: '未连接',
   connecting: '连接中…',
@@ -190,10 +192,6 @@ async function onPickImage(e) {
   const file = e.target.files?.[0]
   e.target.value = ''
   if (!file) return
-  if (!connected.value) {
-    showToast('未连接，无法发送图片')
-    return
-  }
   imSetUploading(true)
   try {
     imSendImage(await uploadImage(file))

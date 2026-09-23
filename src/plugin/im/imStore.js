@@ -8,6 +8,7 @@ import {
   getImIdentity,
   getSupportTarget,
   normalizeSession,
+  sendMsgViaHttp,
   CONTENT_TYPE,
   buildProductContent,
   buildOrderContent,
@@ -25,12 +26,15 @@ export const imState = reactive({
   orderAlert: 0, // 未读订单通知（contentType=4 且来自商户）
   drawerOpen: false,
   consult: null, // { product?, order? } 待自动发送的咨询卡片上下文
+  offlineSend: false, // 最近一条消息走了 HTTP 兜底（WS 未连接）
   toast: '',
 })
 
 let client = null
 let pendingLoadMore = false
 let consultSent = false
+// HTTP 兜底发送后网关回传的对端 im_uid：缓存以免每条消息重复懒注册
+let fallbackPeerUid = ''
 
 export function imConnected() {
   return imState.status === 'online'
@@ -52,6 +56,7 @@ export function imDisconnect() {
     client.close()
     client = null
   }
+  fallbackPeerUid = ''
   imState.status = 'idle'
   imState.sessions = []
   imState.activeSessionId = ''
@@ -87,19 +92,30 @@ export function imCloseSupport() {
   imState.orderAlert = 0
 }
 
-// 咨询卡片：连接就绪 + 会话就绪后只发一次
+// 咨询卡片：会话就绪（WS 在线）或已确认连不上（退回接口）时只发一次
 function trySendConsult() {
-  if (!imState.consult || consultSent || !imState.activeSessionId || !imConnected()) return
+  if (!imState.consult || consultSent) return
+  // 连接中不抢跑：等 onSessions（成功）或 onStatus offline/error（失败）再决定走哪条通道
+  const viaWs = imConnected()
+  const viaHttp = connFailed() && !!(getSupportTarget().toBizUid || fallbackPeerUid)
+  if (!viaWs && !viaHttp) return
   consultSent = true
   if (imState.consult.product) sendContent(buildProductContent(imState.consult.product), CONTENT_TYPE.PRODUCT)
   else if (imState.consult.order) sendContent(buildOrderContent(imState.consult.order), CONTENT_TYPE.ORDER)
 }
 
+// 已尝试且失败（imClient 仍会后台重连，期间发送走接口）
+function connFailed() {
+  return imState.status === 'offline' || imState.status === 'error'
+}
+
 function handlers() {
   return {
-    onStatus: (s) => {
-      imState.status = s
-      if (s === 'online' && client) client.loadSessions()
+    onStatus: (st) => {
+      imState.status = st
+      if (st === 'online' && client) client.loadSessions()
+      // 长时间连不上（重试失败）：带咨询上下文时直接退回接口把卡片发出去
+      if (connFailed()) trySendConsult()
     },
     onSessions: (list) => {
       imState.sessions = (list || []).map(normalizeSession)
@@ -191,30 +207,50 @@ function activePeer() {
   return imState.sessions.find((s) => s.sessionId === imState.activeSessionId) || null
 }
 
-// 统一发送：寻址（已绑定会话用 im_uid，未绑定用商户业务身份）+ 乐观追加
+// 统一发送：寻址（已绑定会话用 im_uid，未绑定用商户业务身份）+ 乐观追加。
+// WebSocket 在线走长连接；未连接则退回网关 HTTP 接口，保证“断线也能发出去”。
 export function sendContent(content, contentType) {
-  if (!client || !imConnected() || !content) return false
+  if (!content) return false
   const peer = activePeer()
-  if (peer && peer.peerImUid) {
-    client.sendChat({ to: peer.peerImUid, content, contentType })
-  } else {
-    const { toType, toBizUid } = getSupportTarget()
-    client.sendChat({ toType, toBizUid, content, contentType })
+  const target = peer?.peerImUid
+    ? { to: peer.peerImUid }
+    : fallbackPeerUid
+      ? { to: fallbackPeerUid }
+      : getSupportTarget()
+  if (!target.to && !target.toBizUid) {
+    showToast('未确定咨询对象，发送失败')
+    return false
   }
+
+  const sentViaWs = !!(client && imConnected())
+  imState.offlineSend = !sentViaWs
   let max = 0
   for (const m of imState.messages) if (m.seq > max) max = m.seq
-  imState.messages = dedupMerge(imState.messages, [
-    {
-      msgId: '',
-      sessionId: imState.activeSessionId,
-      fromUid: '',
-      toUid: peer?.peerImUid || '',
-      content,
-      contentType,
-      seq: max + 1,
-      time: Date.now(),
-    },
-  ])
+  const optimistic = {
+    msgId: '',
+    sessionId: imState.activeSessionId,
+    fromUid: '',
+    toUid: target.to || '',
+    content,
+    contentType,
+    seq: max + 1,
+    time: Date.now(),
+  }
+  imState.messages = dedupMerge(imState.messages, [optimistic])
+
+  if (sentViaWs) {
+    client.sendChat({ ...target, content, contentType })
+    return true
+  }
+  sendMsgViaHttp({ ...target, content, contentType })
+    .then((toImUid) => {
+      // 回传对端 im_uid，后续消息直接按 im_uid 寻址，免重复懒注册
+      if (toImUid && !target.to) fallbackPeerUid = toImUid
+    })
+    .catch((err) => {
+      imState.messages = imState.messages.filter((m) => m !== optimistic)
+      showToast((err && err.message) || '发送失败，请重试')
+    })
   return true
 }
 

@@ -41,3 +41,4 @@ PayPal 同步回跳地址由后端 `travel-api.yaml` 的 `Payment.PayPal.ReturnU
 - 身份：客户 `user_type=3` + `biz_uid=登录用户 id`，咨询对象为商户客服 `user_type=2` + `biz_uid=merchantId`。
 - 传输：WebSocket 不受 CORS 限制，因此不走 Vite 代理，直接由 `VITE_IM_WS_URL` 指定 imGateway；图片上传走 `VITE_IM_API_URL`（默认从 WS 地址推导 http 等价地址）。本地需先启动 imGateway(9281) 与其依赖的 Kafka/imWsRpc。
 - 订单推送：由 travel-rpc 在支付成功/接单/退款审批/核销后调用 imGateway `POST /im/system-msg` 下发，PC 端只需在线接收。
+- 断线兜底：WebSocket 未连上（网关重启、代理阻断等）时，发送自动退回 imGateway `POST /im/send-msg`（身份放 query，与 WS 握手一致），抽屉头部会提示“未连接，消息将改走接口发送”；接口失败会抽回该条乐观消息并 toast。此时收不到实时推送，重新连上后由离线补偿拉回。

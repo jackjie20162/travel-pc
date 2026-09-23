@@ -2230,6 +2230,7 @@ button:disabled {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .im-conn {
@@ -2249,6 +2250,13 @@ button:disabled {
 .im-conn.error {
   background: #fee2e2;
   color: #dc2626;
+}
+
+/* WS 未连上时的降级提示：消息退回 HTTP 接口发送 */
+.im-offline-tip {
+  font-size: 11px;
+  font-weight: 400;
+  color: #b45309;
 }
 
 .im-close {

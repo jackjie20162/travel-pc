@@ -73,6 +73,29 @@ export async function uploadImage(file) {
   return json.data.url
 }
 
+// WebSocket 未连接时的兜底发送：走网关 HTTP 接口 POST /im/send-msg。
+// 身份与 WS 握手一致用 query 传 user_type/biz_uid（自定义 Header 会被 CORS 预检拦掉）。
+// 返回对端 im_uid（字符串）；失败抛出后端文案由调用方 toast。
+export async function sendMsgViaHttp({ to = '', toType = 0, toBizUid = 0, content, contentType = CONTENT_TYPE.TEXT }) {
+  const { userType, bizUid } = getImIdentity()
+  if (!bizUid) throw new Error('请先登录')
+  const url = `${getImHttpBase()}/im/send-msg?user_type=${userType}&biz_uid=${bizUid}`
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      to: to ? String(to) : '',
+      to_type: toType,
+      to_biz_uid: toBizUid,
+      content,
+      content_type: contentType,
+    }),
+  })
+  const json = await resp.json().catch(() => null)
+  if (!resp.ok || !json || json.code !== 0) throw new Error((json && json.msg) || '消息发送失败')
+  return (json.data && json.data.to_im_uid) || ''
+}
+
 // 构造商品卡片消息 content（JSON 字符串）
 export function buildProductContent(p) {
   const cover = p.coverImage || (p.images ? String(p.images).split(',')[0].trim() : '') || ''
