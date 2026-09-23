@@ -6,24 +6,16 @@
  * 分支：CANCELLED（取消）/ PENDING_REFUND（退款申请中）/ REFUNDED（已退款）
  */
 import { formatAmount, formatPrice } from './currency.js'
+import { i18n } from '../locales/index.js'
 
-const STATUS_TEXT = {
-  PENDING_PAYMENT: '待支付',
-  PAYMENT_PROCESSING: '支付处理中',
-  PENDING_ACCEPTANCE: '待接单',
-  PENDING_VERIFY: '待核销',
-  VERIFIED: '已核销',
-  CONFIRMED: '已确认',
-  PENDING_REFUND: '退款中',
-  REFUNDED: '已退款',
-  COMPLETED: '已完成',
-  CANCELLED: '已取消',
-  UNKNOWN: '未知状态',
-}
-
+/** 订单状态文案：走 i18n status.* 命名空间，随语言切换。 */
 export function statusText(status) {
-  if (!status) return STATUS_TEXT.UNKNOWN
-  return STATUS_TEXT[status] || status
+  const { t } = i18n.global
+  if (!status) return t('status.UNKNOWN')
+  const key = `status.${status}`
+  const text = t(key)
+  // vue-i18n 缺失 key 时返回 key 本身，回退显示原始状态码
+  return text === key ? status : text
 }
 
 /** 优先展示下单锁定的金额/币种；无锁定值时按当前展示币种换算基准金额。 */

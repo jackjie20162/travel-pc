@@ -1,7 +1,7 @@
 <template>
   <div class="page orders-page">
     <div class="container">
-      <h1 class="pc-page-title">我的订单</h1>
+      <h1 class="pc-page-title">{{ t('pc.orders.title') }}</h1>
 
       <!-- 状态 Tab：与 travel-app 同一状态机，待支付/待接单显示数量徽章 -->
       <div class="order-tabs">
@@ -18,9 +18,9 @@
         </button>
       </div>
 
-      <div v-if="loading && !orders.length" class="state-panel">加载中...</div>
+      <div v-if="loading && !orders.length" class="state-panel">{{ t('pc.orders.loading') }}</div>
       <div v-else-if="!orders.length" class="state-panel">
-        暂无订单。<RouterLink class="text-link" to="/">去挑选体验 →</RouterLink>
+        {{ t('pc.orders.empty') }}<RouterLink class="text-link" to="/">{{ t('pc.orders.goBrowse') }}</RouterLink>
       </div>
       <div v-else class="orders-table">
         <div v-for="o in orders" :key="o.orderNo" class="pc-card order-card" @click="goDetail(o.orderNo)">
@@ -30,8 +30,8 @@
           </div>
           <div class="order-card-body">
             <div>
-              <strong>{{ o.productTitle || '中东体验订单' }}</strong>
-              <p class="muted">{{ o.date || '' }} · {{ o.quantity || 1 }} 份 · {{ o.customerEmail || '' }}</p>
+              <strong>{{ o.productTitle || t('pc.orders.defaultProduct') }}</strong>
+              <p class="muted">{{ o.date || '' }} · {{ t('pc.orders.units', { count: o.quantity || 1 }) }} · {{ o.customerEmail || '' }}</p>
             </div>
             <div class="order-card-right">
               <strong class="order-amount">{{ orderAmountText(o) }}</strong>
@@ -40,8 +40,8 @@
                   v-if="o.status === 'PENDING_PAYMENT'"
                   class="btn-ghost primary"
                   :to="{ name: 'Payment', query: { orderNo: o.orderNo, totalAmount: o.totalAmount, currency: o.currency, displayAmount: o.displayAmount, displayCurrency: o.displayCurrency } }"
-                >去支付</RouterLink>
-                <button v-else type="button" class="btn-ghost" @click="goDetail(o.orderNo)">查看详情</button>
+                >{{ t('pc.orders.goPay') }}</RouterLink>
+                <button v-else type="button" class="btn-ghost" @click="goDetail(o.orderNo)">{{ t('pc.orders.viewDetail') }}</button>
               </div>
             </div>
           </div>
@@ -50,7 +50,7 @@
 
       <div v-if="orders.length && orders.length < total" class="load-more">
         <button type="button" class="btn-ghost" :disabled="loadingMore" @click="loadMore">
-          {{ loadingMore ? '加载中...' : '加载更多' }}
+          {{ loadingMore ? t('pc.orders.loading') : t('pc.orders.loadMore') }}
         </button>
       </div>
     </div>
@@ -58,12 +58,14 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { getMyOrders } from '../api.js'
 import { statusText, orderAmountText } from '../utils/order.js'
+import { useLocale } from '../composables/useLocale.js'
 
 const router = useRouter()
+const { t } = useLocale()
 const orders = ref([])
 const loading = ref(false)
 const loadingMore = ref(false)
@@ -72,14 +74,14 @@ const page = ref(1)
 const total = ref(0)
 const badges = reactive({ PENDING_PAYMENT: 0, PENDING_ACCEPTANCE: 0 })
 
-const tabs = [
-  { value: '', label: '全部' },
-  { value: 'PENDING_PAYMENT', label: '待支付' },
-  { value: 'PENDING_ACCEPTANCE', label: '待接单' },
-  { value: 'PENDING_VERIFY', label: '待核销' },
-  { value: 'COMPLETED', label: '已完成' },
-  { value: 'CANCELLED', label: '已取消' },
-]
+const tabs = computed(() => [
+  { value: '', label: t('pc.orders.tabAll') },
+  { value: 'PENDING_PAYMENT', label: t('status.PENDING_PAYMENT') },
+  { value: 'PENDING_ACCEPTANCE', label: t('status.PENDING_ACCEPTANCE') },
+  { value: 'PENDING_VERIFY', label: t('status.PENDING_VERIFY') },
+  { value: 'COMPLETED', label: t('status.COMPLETED') },
+  { value: 'CANCELLED', label: t('status.CANCELLED') },
+])
 
 async function loadOrders(append = false) {
   if (append) {

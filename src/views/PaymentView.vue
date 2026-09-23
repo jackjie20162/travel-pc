@@ -2,42 +2,42 @@
   <div class="page payment-page">
     <div class="container narrow">
       <div class="pc-stepper-nav">
-        <span class="step done">1 选择</span>
+        <span class="step done">{{ t('pc.payment.step1') }}</span>
         <i class="step-line"></i>
-        <span class="step done">2 确认</span>
+        <span class="step done">{{ t('pc.payment.step2') }}</span>
         <i class="step-line"></i>
-        <span class="step current">3 支付</span>
+        <span class="step current">{{ t('pc.payment.step3') }}</span>
       </div>
 
-      <h1 class="pc-page-title">收银台</h1>
+      <h1 class="pc-page-title">{{ t('pc.payment.checkout') }}</h1>
 
       <!-- 订单信息 -->
       <section class="pc-card">
-        <div class="summary-line"><span>订单号</span><span class="mono">{{ orderNo }}</span></div>
+        <div class="summary-line"><span>{{ t('pc.payment.orderNo') }}</span><span class="mono">{{ orderNo }}</span></div>
         <div class="summary-line total">
-          <span>应付金额</span>
+          <span>{{ t('pc.payment.amountDue') }}</span>
           <strong>{{ payAmountText }}</strong>
         </div>
       </section>
 
       <!-- 支付方式 -->
       <section class="pc-card">
-        <h3>选择支付方式</h3>
+        <h3>{{ t('pc.payment.selectMethod') }}</h3>
         <div class="pay-methods">
           <label class="pay-method" :class="{ selected: provider === 'paypal' }">
             <input v-model="provider" type="radio" value="paypal" />
             <span class="pay-icon">🅿️</span>
             <div>
               <h4>PayPal</h4>
-              <small>跳转 PayPal 完成支付，支持余额与银行卡</small>
+              <small>{{ t('pc.payment.paypalDesc') }}</small>
             </div>
           </label>
           <label class="pay-method" :class="{ selected: provider === 'stripe' }">
             <input v-model="provider" type="radio" value="stripe" />
             <span class="pay-icon">💳</span>
             <div>
-              <h4>Stripe 信用卡</h4>
-              <small>Visa / Mastercard / AMEX，页面内安全支付</small>
+              <h4>{{ t('pc.payment.stripeTitle') }}</h4>
+              <small>{{ t('pc.payment.stripeDesc') }}</small>
             </div>
           </label>
         </div>
@@ -45,7 +45,7 @@
 
       <!-- Stripe 内嵌支付表单 -->
       <section v-if="provider === 'stripe'" class="pc-card">
-        <div v-if="stripeLoading" class="stripe-loading">正在初始化 Stripe 支付组件...</div>
+        <div v-if="stripeLoading" class="stripe-loading">{{ t('pc.payment.stripeLoading') }}</div>
         <div v-show="stripeReady" ref="paymentElRef" class="stripe-element"></div>
         <button
           v-if="stripeReady"
@@ -54,14 +54,14 @@
           :disabled="stripeSubmitting"
           @click="handleStripePay"
         >
-          {{ stripeSubmitting ? '处理中...' : `立即支付 ${payAmountText}` }}
+          {{ stripeSubmitting ? t('common.processing') : t('pc.payment.payNow', { amount: payAmountText }) }}
         </button>
       </section>
 
       <!-- PayPal 支付按钮 -->
       <div v-if="provider === 'paypal'" class="payment-action">
         <button type="button" class="wide-button" :disabled="paying" @click="pay">
-          {{ paying ? '处理中...' : `立即支付 ${payAmountText}` }}
+          {{ paying ? t('common.processing') : t('pc.payment.payNow', { amount: payAmountText }) }}
         </button>
       </div>
 
@@ -75,9 +75,11 @@ import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { createPayment, createStripeIntent } from '../api.js'
 import { formatAmount, formatPrice } from '../utils/currency.js'
+import { useLocale } from '../composables/useLocale.js'
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useLocale()
 
 const orderNo = route.query.orderNo || ''
 const totalAmount = parseInt(route.query.totalAmount) || 0
@@ -117,7 +119,7 @@ async function pay() {
       router.push({ name: 'OrderDetail', params: { orderNo }, query: { paid: 1 } })
     }
   } catch (e) {
-    error.value = e.message || '发起支付失败'
+    error.value = e.message || t('pc.payment.payFailed')
   } finally {
     paying.value = false
   }
@@ -171,7 +173,7 @@ async function initStripe() {
     setTimeout(() => paymentElement.mount(paymentElRef.value), 0)
   } catch (e) {
     stripeLoading.value = false
-    error.value = e.message || 'Stripe 初始化失败'
+    error.value = e.message || t('pc.payment.stripeInitFailed')
   }
 }
 
@@ -207,12 +209,12 @@ async function handleStripePay() {
       redirect: 'if_required',
     })
     if (result.error) {
-      error.value = result.error.message || '支付失败'
+      error.value = result.error.message || t('pc.payment.payFailedShort')
     } else if (result.paymentIntent?.status === 'succeeded') {
       router.push({ name: 'OrderDetail', params: { orderNo }, query: { paid: 1 } })
     }
   } catch (e) {
-    error.value = e.message || '支付失败'
+    error.value = e.message || t('pc.payment.payFailedShort')
   } finally {
     stripeSubmitting.value = false
   }

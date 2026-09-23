@@ -3,17 +3,17 @@
     <div class="container">
       <!-- 步骤条：与 travel-app 一致 选择 → 确认 → 支付 -->
       <div class="pc-stepper-nav">
-        <span class="step done">1 选择</span>
+        <span class="step done">1 {{ t('pc.booking.step1') }}</span>
         <i class="step-line"></i>
-        <span class="step current">2 确认</span>
+        <span class="step current">2 {{ t('pc.booking.step2') }}</span>
         <i class="step-line"></i>
-        <span class="step">3 支付</span>
+        <span class="step">3 {{ t('pc.booking.step3') }}</span>
       </div>
 
-      <div v-if="loading" class="state-panel">正在加载产品信息...</div>
+      <div v-if="loading" class="state-panel">{{ t('pc.booking.loadingProduct') }}</div>
       <div v-else-if="loadError" class="state-panel">
         <p>{{ loadError }}</p>
-        <button class="text-link" type="button" @click="goBackToProduct">返回商品页</button>
+        <button class="text-link" type="button" @click="goBackToProduct">{{ t('pc.booking.backToProduct') }}</button>
       </div>
       <template v-else>
         <div class="booking-layout">
@@ -21,8 +21,8 @@
             <!-- 产品标题 + 退订政策 -->
             <div class="booking-product-header">
               <h1>{{ productTitle }}</h1>
-              <button v-if="cancelPolicy" type="button" class="cancel-policy-link" @click="showCancelPolicy = !showCancelPolicy">
-                {{ cancelPolicy }} {{ showCancelPolicy ? '∧' : '>' }}
+              <button type="button" class="cancel-policy-link" @click="showCancelPolicy = !showCancelPolicy">
+                {{ t('pc.booking.cancelPolicy') }} {{ showCancelPolicy ? '∧' : '>' }}
               </button>
             </div>
             <div v-if="showCancelPolicy" class="cancel-policy-detail">
@@ -32,29 +32,29 @@
             <!-- 游客信息 -->
             <section class="pc-card">
               <div class="pc-card-header">
-                <h3>游客信息 <small>共 {{ travelers.length }} 位</small></h3>
+                <h3>{{ t('pc.booking.travelerInfo') }} <small>{{ t('pc.booking.travelerTotal', { count: travelers.length }) }}</small></h3>
                 <div class="header-actions">
-                  <button type="button" class="btn-ghost" @click="openTravelersModal">选择常用出行人</button>
-                  <button type="button" class="btn-ghost" @click="addTraveler">+ 添加游客</button>
+                  <button type="button" class="btn-ghost" @click="openTravelersModal">{{ t('pc.booking.selectSaved') }}</button>
+                  <button type="button" class="btn-ghost" @click="addTraveler">{{ t('pc.booking.addTraveler') }}</button>
                 </div>
               </div>
 
               <div v-for="(traveler, idx) in travelers" :key="idx" class="traveler-card">
                 <div class="traveler-card-header">
-                  <span class="traveler-index">游客 {{ idx + 1 }}</span>
-                  <button v-if="travelers.length > 1" type="button" class="btn-remove-traveler" @click="removeTraveler(idx)">删除</button>
+                  <span class="traveler-index">{{ t('pc.booking.travelerLabel', { index: idx + 1 }) }}</span>
+                  <button v-if="travelers.length > 1" type="button" class="btn-remove-traveler" @click="removeTraveler(idx)">{{ t('pc.booking.delete') }}</button>
                 </div>
                 <div class="pc-form-grid">
                   <label class="pc-form-item">
-                    <span>证件类型</span>
+                    <span>{{ t('pc.booking.idType') }}</span>
                     <select v-model="traveler.idType">
-                      <option value="passport">护照</option>
-                      <option value="id_card">身份证</option>
-                      <option value="other_id">其他证件</option>
+                      <option value="passport">{{ t('pc.booking.idTypes.passport') }}</option>
+                      <option value="id_card">{{ t('pc.booking.idTypes.id_card') }}</option>
+                      <option value="other_id">{{ t('pc.booking.idTypes.other_id') }}</option>
                     </select>
                   </label>
                   <label class="pc-form-item">
-                    <span>姓名（{{ nameLangLabel(traveler.nameLang) }}）<em>*</em></span>
+                    <span>{{ t('pc.booking.nameLabel', { lang: nameLangLabel(traveler.nameLang) }) }}<em>*</em></span>
                     <div class="name-input-row">
                       <input
                         v-model="traveler.name"
@@ -73,7 +73,7 @@
                     </div>
                   </label>
                   <label class="pc-form-item">
-                    <span>证件号</span>
+                    <span>{{ t('pc.booking.idNumber') }}</span>
                     <input
                       v-model="traveler.idNumber"
                       :placeholder="idNumberPlaceholder(traveler.idType)"
@@ -81,8 +81,8 @@
                     />
                   </label>
                   <label class="pc-form-item">
-                    <span>手机号</span>
-                    <input v-model="traveler.phone" type="tel" placeholder="选填，便于司机/向导联系" :dir="traveler.nameLang === 'ar' ? 'rtl' : 'ltr'" />
+                    <span>{{ t('pc.booking.phone') }}</span>
+                    <input v-model="traveler.phone" type="tel" :placeholder="t('pc.booking.phonePh')" :dir="traveler.nameLang === 'ar' ? 'rtl' : 'ltr'" />
                   </label>
                 </div>
               </div>
@@ -91,67 +91,62 @@
             <!-- 联系人信息 -->
             <section class="pc-card">
               <div class="pc-card-header">
-                <h3>联系人信息</h3>
-                <button type="button" class="btn-ghost" @click="openContactsModal">选择常用联系人</button>
+                <h3>{{ t('pc.booking.contactInfo') }}</h3>
+                <button type="button" class="btn-ghost" @click="openContactsModal">{{ t('pc.booking.savedContacts') }}</button>
               </div>
               <div class="pc-form-grid">
                 <label class="pc-form-item">
-                  <span>联系人姓名 <em>*</em></span>
-                  <input v-model="contact.name" placeholder="用于接收确认邮件" />
+                  <span>{{ t('pc.booking.contactName') }} <em>*</em></span>
+                  <input v-model="contact.name" :placeholder="t('pc.booking.contactNamePh')" />
                 </label>
                 <label class="pc-form-item">
-                  <span>联系邮箱 <em>*</em></span>
-                  <input v-model="contact.email" type="email" placeholder="your@email.com" />
+                  <span>{{ t('pc.booking.contactEmail') }} <em>*</em></span>
+                  <input v-model="contact.email" type="email" :placeholder="t('pc.booking.contactEmailPh')" />
                 </label>
                 <label class="pc-form-item">
-                  <span>联系电话</span>
-                  <input v-model="contact.phone" type="tel" placeholder="+971 ..." />
+                  <span>{{ t('pc.booking.contactPhone') }}</span>
+                  <input v-model="contact.phone" type="tel" :placeholder="t('pc.booking.contactPhonePh')" />
                 </label>
               </div>
             </section>
 
             <!-- 特殊需求 -->
             <section class="pc-card">
-              <div class="pc-card-header"><h3>特殊需求</h3></div>
-              <textarea v-model="remark" rows="3" placeholder="如儿童座椅、素食、酒店接送地址等（选填）"></textarea>
+              <div class="pc-card-header"><h3>{{ t('pc.booking.specialNeeds') }}</h3></div>
+              <textarea v-model="remark" rows="3" :placeholder="t('pc.booking.remarkPh')"></textarea>
             </section>
 
             <!-- 预订须知 -->
             <section class="pc-card notice">
-              <div class="pc-card-header"><h3>重要须知</h3></div>
+              <div class="pc-card-header"><h3>{{ t('pc.booking.importantNotice') }}</h3></div>
               <ul>
-                <li>请确保证件信息与出行人本人一致，登机/入场需核验。</li>
-                <li>建议提前 10 分钟到达集合点，迟到可能视为放弃。</li>
-                <li>支付成功后订单进入商户接单流程，接单完成生成电子凭证。</li>
-                <li>取消/退款按退订政策收取损失费，详见页面顶部说明。</li>
+                <li>{{ t('pc.booking.notice1') }}</li>
+                <li>{{ t('pc.booking.notice2') }}</li>
+                <li>{{ t('pc.booking.notice3') }}</li>
+                <li>{{ t('pc.booking.notice4') }}</li>
               </ul>
             </section>
           </div>
 
           <!-- 右侧粘性订单摘要 -->
           <aside class="pc-card booking-summary">
-            <h3>订单摘要</h3>
+            <h3>{{ t('pc.booking.summary') }}</h3>
             <div class="summary-line"><span>{{ productTitle }}</span></div>
-            <div v-if="packageName" class="summary-line muted"><span>套餐：{{ packageName }}</span></div>
-            <div class="summary-line muted"><span>出行日期</span><span>{{ date }}</span></div>
+            <div v-if="packageName" class="summary-line muted"><span>{{ t('pc.booking.packageLabel', { name: packageName }) }}</span></div>
+            <div class="summary-line muted"><span>{{ t('pc.booking.travelDate') }}</span><span>{{ date }}</span></div>
             <div class="summary-line">
-              <span>人数</span>
-              <span class="qty-stepper">
-                <button type="button" :disabled="qty <= 1" @click="decreaseQty">−</button>
-                <b>{{ qty }}</b>
-                <button type="button" :disabled="qty >= maxQty" @click="increaseQty">+</button>
-              </span>
+              <span>{{ t('pc.booking.people') }}</span>
+              <b>{{ travelers.length }}</b>
             </div>
-            <p class="qty-hint">最多预订 {{ maxQty }} 份</p>
-            <div class="summary-line price"><span>单价</span><span>{{ priceText(unitPrice) }}</span></div>
+            <div class="summary-line price"><span>{{ t('pc.booking.unitPrice') }}</span><span>{{ priceText(unitPrice) }}</span></div>
             <div class="summary-line total">
-              <span>总价</span>
+              <span>{{ t('pc.booking.total') }}</span>
               <strong>{{ priceText(totalAmount) }}</strong>
             </div>
             <button class="wide-button" type="button" :disabled="submitting || !canSubmit" @click="submitOrder">
-              {{ submitting ? '提交中...' : `确认下单 · ${priceText(totalAmount)}` }}
+              {{ submitting ? t('pc.booking.submitting') : t('pc.booking.confirmOrder', { amount: priceText(totalAmount) }) }}
             </button>
-            <p class="panel-note">下单后进入支付页，支持 PayPal / Stripe。</p>
+            <p class="panel-note">{{ t('pc.booking.panelNote') }}</p>
           </aside>
         </div>
 
@@ -163,10 +158,10 @@
     <div v-if="showTravelersModal" class="pc-modal-overlay" @click.self="showTravelersModal = false">
       <div class="pc-modal">
         <div class="pc-modal-header">
-          <h3>常用出行人</h3>
+          <h3>{{ t('pc.booking.savedTravelers') }}</h3>
           <button type="button" class="modal-close" @click="showTravelersModal = false">✕</button>
         </div>
-        <div v-if="savedTravelers.length === 0" class="modal-empty">暂无保存的出行人，可在下方添加</div>
+        <div v-if="savedTravelers.length === 0" class="modal-empty">{{ t('pc.booking.noSavedTravelers') }}</div>
         <div v-else class="saved-list">
           <div v-for="st in savedTravelers" :key="st.id" class="saved-item" @click="selectSavedTraveler(st)">
             <div class="saved-item-info">
@@ -174,27 +169,27 @@
               <span class="saved-item-detail">{{ idTypeLabel(st.idType) }} {{ st.idNumber }} · {{ st.phone }}</span>
             </div>
             <div class="saved-item-actions">
-              <button type="button" class="btn-ghost" @click.stop="startEditSavedTraveler(st)">编辑</button>
-              <button type="button" class="btn-ghost danger" @click.stop="deleteSavedTraveler(st.id)">删除</button>
+              <button type="button" class="btn-ghost" @click.stop="startEditSavedTraveler(st)">{{ t('common.edit') }}</button>
+              <button type="button" class="btn-ghost danger" @click.stop="deleteSavedTraveler(st.id)">{{ t('pc.booking.delete') }}</button>
             </div>
           </div>
         </div>
         <div class="modal-form">
-          <h4>{{ editingTravelerIdx >= 0 ? '编辑出行人' : '新增出行人' }}</h4>
+          <h4>{{ editingTravelerIdx >= 0 ? t('pc.booking.editTraveler') : t('pc.booking.newTraveler') }}</h4>
           <div class="pc-form-grid">
-            <label class="pc-form-item"><span>姓名</span><input v-model="travelerForm.name" placeholder="请输入姓名" /></label>
+            <label class="pc-form-item"><span>{{ t('pc.booking.name') }}</span><input v-model="travelerForm.name" :placeholder="t('pc.booking.namePhInput')" /></label>
             <label class="pc-form-item">
-              <span>证件类型</span>
+              <span>{{ t('pc.booking.idType') }}</span>
               <select v-model="travelerForm.idType">
-                <option value="passport">护照</option>
-                <option value="id_card">身份证</option>
-                <option value="other_id">其他证件</option>
+                <option value="passport">{{ t('pc.booking.idTypes.passport') }}</option>
+                <option value="id_card">{{ t('pc.booking.idTypes.id_card') }}</option>
+                <option value="other_id">{{ t('pc.booking.idTypes.other_id') }}</option>
               </select>
             </label>
-            <label class="pc-form-item"><span>证件号</span><input v-model="travelerForm.idNumber" placeholder="证件号码" /></label>
-            <label class="pc-form-item"><span>手机号</span><input v-model="travelerForm.phone" type="tel" placeholder="+971 ..." /></label>
+            <label class="pc-form-item"><span>{{ t('pc.booking.idNumber') }}</span><input v-model="travelerForm.idNumber" :placeholder="t('pc.booking.idNumberInput')" /></label>
+            <label class="pc-form-item"><span>{{ t('pc.booking.phone') }}</span><input v-model="travelerForm.phone" type="tel" :placeholder="t('pc.booking.phoneInput')" /></label>
           </div>
-          <button type="button" class="btn-ghost primary" @click="saveTravelerForm">保存</button>
+          <button type="button" class="btn-ghost primary" @click="saveTravelerForm">{{ t('common.save') }}</button>
         </div>
       </div>
     </div>
@@ -203,10 +198,10 @@
     <div v-if="showContactsModal" class="pc-modal-overlay" @click.self="showContactsModal = false">
       <div class="pc-modal">
         <div class="pc-modal-header">
-          <h3>常用联系人</h3>
+          <h3>{{ t('pc.booking.savedContacts') }}</h3>
           <button type="button" class="modal-close" @click="showContactsModal = false">✕</button>
         </div>
-        <div v-if="savedContacts.length === 0" class="modal-empty">暂无保存的联系人，可在下方添加</div>
+        <div v-if="savedContacts.length === 0" class="modal-empty">{{ t('pc.booking.noSavedContacts') }}</div>
         <div v-else class="saved-list">
           <div v-for="sc in savedContacts" :key="sc.id" class="saved-item" @click="selectSavedContact(sc)">
             <div class="saved-item-info">
@@ -214,19 +209,19 @@
               <span class="saved-item-detail">{{ sc.email }} · {{ sc.phone }}</span>
             </div>
             <div class="saved-item-actions">
-              <button type="button" class="btn-ghost" @click.stop="startEditSavedContact(sc)">编辑</button>
-              <button type="button" class="btn-ghost danger" @click.stop="deleteSavedContact(sc.id)">删除</button>
+              <button type="button" class="btn-ghost" @click.stop="startEditSavedContact(sc)">{{ t('common.edit') }}</button>
+              <button type="button" class="btn-ghost danger" @click.stop="deleteSavedContact(sc.id)">{{ t('pc.booking.delete') }}</button>
             </div>
           </div>
         </div>
         <div class="modal-form">
-          <h4>{{ editingContactIdx >= 0 ? '编辑联系人' : '新增联系人' }}</h4>
+          <h4>{{ editingContactIdx >= 0 ? t('pc.booking.editContact') : t('pc.booking.newContact') }}</h4>
           <div class="pc-form-grid">
-            <label class="pc-form-item"><span>姓名</span><input v-model="contactForm.name" placeholder="请输入姓名" /></label>
-            <label class="pc-form-item"><span>邮箱</span><input v-model="contactForm.email" type="email" placeholder="your@email.com" /></label>
-            <label class="pc-form-item"><span>手机号</span><input v-model="contactForm.phone" type="tel" placeholder="+971 ..." /></label>
+            <label class="pc-form-item"><span>{{ t('pc.booking.name') }}</span><input v-model="contactForm.name" :placeholder="t('pc.booking.namePhInput')" /></label>
+            <label class="pc-form-item"><span>{{ t('pc.booking.emailLabel') }}</span><input v-model="contactForm.email" type="email" :placeholder="t('pc.booking.emailInput')" /></label>
+            <label class="pc-form-item"><span>{{ t('pc.booking.phone') }}</span><input v-model="contactForm.phone" type="tel" :placeholder="t('pc.booking.phoneInput')" /></label>
           </div>
-          <button type="button" class="btn-ghost primary" @click="saveContactForm">保存</button>
+          <button type="button" class="btn-ghost primary" @click="saveContactForm">{{ t('common.save') }}</button>
         </div>
       </div>
     </div>
@@ -239,9 +234,11 @@ import { useRoute, useRouter } from 'vue-router'
 import { createOrder, getProductDetail, getProductPackages, batchInventory } from '../api.js'
 import { getDisplayCurrency } from '../api.js'
 import { formatPrice } from '../utils/currency.js'
+import { useLocale } from '../composables/useLocale.js'
 
 const route = useRoute()
 const router = useRouter()
+const { t, tm } = useLocale()
 
 /* ── URL 仅传 ID，产品信息通过 API 获取（与 travel-app Booking 一致） ── */
 const productId = parseInt(route.query.productId) || 0
@@ -264,15 +261,11 @@ function emptyTraveler() {
   return { name: '', idType: 'passport', idNumber: '', phone: '', nameLang: 'zh' }
 }
 
-/* ── 退订政策（与 travel-app 相同的固定分档规则） ── */
-const cancelPolicy = '订单确认成功后，取消需收取损失费70%起'
-const cancelPolicyDetail = [
-  '出行前7天以上取消，收取0%损失费',
-  '出行前3-7天取消，收取30%损失费',
-  '出行前1-3天取消，收取50%损失费',
-  '出行当天取消，收取70%损失费',
-  '出行后取消，收取100%损失费',
-]
+/* ── 退订政策（与 travel-app 相同的固定分档规则，文案走 i18n） ── */
+const cancelPolicyDetail = computed(() => {
+  const lines = tm('pc.booking.cancelPolicyDetail')
+  return Array.isArray(lines) ? lines : []
+})
 const showCancelPolicy = ref(false)
 
 const STORAGE_KEY = `booking_form_${productId || 'default'}`
@@ -281,7 +274,7 @@ const STORAGE_KEY = `booking_form_${productId || 'default'}`
 async function loadProductData() {
   if (!productId || !packageId) {
     loading.value = false
-    loadError.value = '缺少商品或套餐参数，请从商品详情页重新预订'
+    loadError.value = t('pc.booking.missingParams')
     return
   }
   try {
@@ -289,7 +282,7 @@ async function loadProductData() {
       getProductDetail(productId),
       getProductPackages(productId).catch(() => []),
     ])
-    productTitle.value = product.title || product.name || '中东体验'
+    productTitle.value = product.title || product.name || t('pc.booking.defaultProduct')
     currency.value = product.currency || 'AED'
 
     const pkg = (pkgItems || []).find((p) => Number(p.id) === packageId)
@@ -322,39 +315,27 @@ async function loadProductData() {
     if (qty.value > maxQty.value) qty.value = maxQty.value
   } catch (e) {
     console.error('加载产品信息失败', e)
-    loadError.value = '加载产品信息失败，请稍后重试'
+    loadError.value = t('pc.booking.loadProductFailed')
   } finally {
     loading.value = false
   }
 }
 
-/* ── 姓名语言 / 证件提示 ── */
-const NAME_LANG_LABELS = { zh: '中文', en: '英文', ar: '阿拉伯语' }
-const NAME_PLACEHOLDERS = {
-  zh: '请输入中文姓名，与证件一致',
-  en: 'Please enter name as shown on passport',
-  ar: 'الرجاء إدخال الاسم كما في الجواز',
-}
-const ID_NUMBER_PLACEHOLDERS = {
-  passport: '请输入护照号，如 E12345678',
-  id_card: '请输入 18 位身份证号',
-  other_id: '请输入证件号码',
-}
+/* ── 姓名语言 / 证件提示（走 i18n） ── */
 function langLabel(lang) {
   return { zh: '中', en: '英', ar: 'ع' }[lang] || lang
 }
 function nameLangLabel(lang) {
-  return NAME_LANG_LABELS[lang] || '中文'
+  return t(`pc.booking.nameLangFull.${lang}`)
 }
 function namePlaceholder(lang) {
-  return NAME_PLACEHOLDERS[lang] || NAME_PLACEHOLDERS.zh
+  return t(`pc.booking.namePh.${lang}`)
 }
 function idNumberPlaceholder(type) {
-  return ID_NUMBER_PLACEHOLDERS[type || 'other_id'] || ''
+  return t(`pc.booking.idNumberPh.${type || 'other_id'}`)
 }
-const ID_TYPE_LABELS = { passport: '护照', id_card: '身份证', other_id: '其他' }
 function idTypeLabel(val) {
-  return ID_TYPE_LABELS[val] || val || ''
+  return val ? t(`pc.booking.idTypes.${val}`) : ''
 }
 
 /* ── 游客列表：按 qty 初始化并联动 ── */
@@ -455,13 +436,14 @@ function openContactsModal() {
 function selectSavedTraveler(st) {
   const duplicate = travelers.value.find((t) => t.name.trim() && t.name === st.name && t.idNumber === st.idNumber)
   if (duplicate) {
-    error.value = `出行人「${st.name}」已在列表中`
+    error.value = t('pc.booking.duplicateTraveler', { name: st.name })
     return
   }
   if (travelers.value.length === 1 && !travelers.value[0].name) {
     Object.assign(travelers.value[0], { ...st })
   } else {
     travelers.value.push({ ...st })
+    qty.value = travelers.value.length
   }
   showTravelersModal.value = false
 }
@@ -477,7 +459,7 @@ function deleteSavedTraveler(id) {
   saveSavedTravelers()
 }
 function saveTravelerForm() {
-  if (!travelerForm.value.name.trim()) { error.value = '请输入出行人姓名'; return }
+  if (!travelerForm.value.name.trim()) { error.value = t('pc.booking.nameRequired'); return }
   if (editingTravelerIdx.value >= 0) {
     savedTravelers.value[editingTravelerIdx.value] = { ...travelerForm.value }
   } else {
@@ -504,8 +486,8 @@ function deleteSavedContact(id) {
   saveSavedContacts()
 }
 function saveContactForm() {
-  if (!contactForm.value.name.trim()) { error.value = '请输入联系人姓名'; return }
-  if (!contactForm.value.email.trim()) { error.value = '请输入联系人邮箱'; return }
+  if (!contactForm.value.name.trim()) { error.value = t('pc.booking.contactNameRequired'); return }
+  if (!contactForm.value.email.trim()) { error.value = t('pc.booking.contactEmailRequired'); return }
   if (editingContactIdx.value >= 0) {
     savedContacts.value[editingContactIdx.value] = { ...contactForm.value }
   } else {
@@ -571,9 +553,13 @@ function increaseQty() {
 }
 function addTraveler() {
   travelers.value.push(emptyTraveler())
+  qty.value = travelers.value.length
 }
 function removeTraveler(idx) {
-  if (travelers.value.length > 1) travelers.value.splice(idx, 1)
+  if (travelers.value.length > 1) {
+    travelers.value.splice(idx, 1)
+    qty.value = travelers.value.length
+  }
 }
 
 function generateReservationKey() {
@@ -619,7 +605,7 @@ async function submitOrder() {
       },
     })
   } catch (e) {
-    error.value = e.message || '下单失败，请稍后重试'
+    error.value = e.message || t('pc.booking.orderFailed')
   } finally {
     submitting.value = false
   }

@@ -4,25 +4,28 @@
       <RouterLink class="brand" to="/">
         <span class="brand-mark">G</span>
         <span>
-          <strong>Global Dubai Travel</strong>
-          <small>Middle East experiences</small>
+          <strong>{{ t('pc.brand') }}</strong>
+          <small>{{ t('pc.brandSub') }}</small>
         </span>
       </RouterLink>
 
       <form class="header-search" @submit.prevent="submitSearch">
         <span class="search-icon">⌕</span>
-        <input v-model="keyword" placeholder="搜索城市、景点或体验" />
-        <button type="submit">搜索</button>
+        <input v-model="keyword" :placeholder="t('pc.nav.searchPh')" />
+        <button type="submit">{{ t('pc.nav.search') }}</button>
       </form>
 
       <nav class="site-nav" aria-label="Primary navigation">
-        <RouterLink to="/destinations/dubai">迪拜</RouterLink>
-        <RouterLink to="/destinations/abu-dhabi">阿布扎比</RouterLink>
-        <RouterLink to="/destinations/doha">多哈</RouterLink>
-        <select v-model="currencyCode" class="nav-currency" title="展示币种" @change="onCurrencyChange">
+        <RouterLink to="/destinations/dubai">{{ t('pc.nav.dubai') }}</RouterLink>
+        <RouterLink to="/destinations/abu-dhabi">{{ t('pc.nav.abuDhabi') }}</RouterLink>
+        <RouterLink to="/destinations/doha">{{ t('pc.nav.doha') }}</RouterLink>
+        <select v-model="localeCode" class="nav-currency" :title="t('pc.nav.currencyTitle')" @change="onLocaleChange">
+          <option v-for="l in supportedLocales" :key="l" :value="l">{{ localeLabels[l] }}</option>
+        </select>
+        <select v-model="currencyCode" class="nav-currency" :title="t('pc.nav.currencyTitle')" @change="onCurrencyChange">
           <option v-for="c in currencyList" :key="c.code" :value="c.code">{{ c.code }}</option>
         </select>
-        <RouterLink v-if="user.isLoggedIn.value" to="/orders">我的订单</RouterLink>
+        <RouterLink v-if="user.isLoggedIn.value" to="/orders">{{ t('pc.nav.myOrders') }}</RouterLink>
         <button
           v-if="user.isLoggedIn.value"
           type="button"
@@ -30,14 +33,14 @@
           :class="{ alert: imState.orderAlert > 0 }"
           @click="openSupport"
         >
-          客服
+          {{ t('pc.nav.support') }}
           <span v-if="imState.unreadTotal > 0" class="nav-badge">{{ imState.unreadTotal > 99 ? '99+' : imState.unreadTotal }}</span>
         </button>
         <template v-if="user.isLoggedIn.value">
           <span class="nav-user" :title="user.email.value">{{ user.nickname.value || user.username.value }}</span>
-          <button type="button" class="nav-logout" @click="handleLogout">退出</button>
+          <button type="button" class="nav-logout" @click="handleLogout">{{ t('pc.nav.logout') }}</button>
         </template>
-        <RouterLink v-else to="/login">登录</RouterLink>
+        <RouterLink v-else to="/login">{{ t('pc.nav.login') }}</RouterLink>
       </nav>
     </header>
 
@@ -47,13 +50,13 @@
 
     <footer class="site-footer">
       <div>
-        <strong>Global Dubai Travel</strong>
-        <p>中东目的地体验预订平台，连接真实商品、库存和订单服务。</p>
+        <strong>{{ t('pc.brand') }}</strong>
+        <p>{{ t('pc.footer.desc') }}</p>
       </div>
       <div class="footer-links">
-        <a href="#top">返回顶部</a>
-        <RouterLink to="/destinations/dubai">探索迪拜</RouterLink>
-        <RouterLink to="/destinations/abu-dhabi">探索阿布扎比</RouterLink>
+        <a href="#top">{{ t('pc.footer.backToTop') }}</a>
+        <RouterLink to="/destinations/dubai">{{ t('pc.footer.exploreDubai') }}</RouterLink>
+        <RouterLink to="/destinations/abu-dhabi">{{ t('pc.footer.exploreAbuDhabi') }}</RouterLink>
       </div>
     </footer>
 
@@ -65,6 +68,7 @@
 import { ref, watch, onMounted } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { useUser } from './composables/user.js'
+import { useLocale } from './composables/useLocale.js'
 import { currencies, selectedCurrency, setSelectedCurrency } from './utils/currency.js'
 import ImSupportDrawer from './plugin/im/ImSupportDrawer.vue'
 import { imState, imConnect, imDisconnect, imOpenSupport } from './plugin/im/imStore'
@@ -72,9 +76,11 @@ import { imState, imConnect, imDisconnect, imOpenSupport } from './plugin/im/imS
 const route = useRoute()
 const router = useRouter()
 const user = useUser()
+const { t, locale, setLocale, supportedLocales, localeLabels } = useLocale()
 const keyword = ref(route.query.keyword || '')
 const currencyCode = ref(selectedCurrency.value)
 const currencyList = currencies
+const localeCode = ref(locale.value)
 
 watch(
   () => route.query.keyword,
@@ -85,6 +91,10 @@ watch(
 
 function onCurrencyChange() {
   setSelectedCurrency(currencyCode.value)
+}
+
+function onLocaleChange() {
+  setLocale(localeCode.value)
 }
 
 function handleLogout() {

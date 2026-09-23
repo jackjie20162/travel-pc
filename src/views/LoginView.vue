@@ -2,59 +2,59 @@
   <div class="page login-page">
     <div class="container narrow">
       <section class="pc-card auth-card">
-        <h1>{{ isRegister ? '创建账户' : '欢迎回来' }}</h1>
-        <p class="muted">{{ isRegister ? '注册后即可预订中东体验并管理订单' : '使用邮箱验证码登录，无需密码' }}</p>
+        <h1>{{ isRegister ? t('pc.auth.createAccount') : t('pc.auth.welcomeBack') }}</h1>
+        <p class="muted">{{ isRegister ? t('pc.auth.registerDesc') : t('pc.auth.loginDesc') }}</p>
 
         <form class="auth-form" @submit.prevent="handleSubmit">
           <template v-if="isRegister">
             <label class="modal-field">
-              <span>用户名 <em>*</em></span>
-              <input v-model="form.username" placeholder="登录名" required />
+              <span>{{ t('pc.auth.username') }} <em>*</em></span>
+              <input v-model="form.username" :placeholder="t('pc.auth.usernamePh')" required />
             </label>
             <label class="modal-field">
-              <span>昵称</span>
-              <input v-model="form.nickname" placeholder="选填" />
+              <span>{{ t('pc.auth.nickname') }}</span>
+              <input v-model="form.nickname" :placeholder="t('pc.auth.optional')" />
             </label>
             <label class="modal-field">
-              <span>密码 <em>*</em></span>
-              <input v-model="form.password" type="password" placeholder="6-20 位密码" required />
+              <span>{{ t('pc.auth.password') }} <em>*</em></span>
+              <input v-model="form.password" type="password" :placeholder="t('pc.auth.passwordPh')" required />
             </label>
           </template>
 
           <label class="modal-field">
-            <span>邮箱 <em>*</em></span>
+            <span>{{ t('pc.auth.email') }} <em>*</em></span>
             <input v-model="form.email" type="email" placeholder="you@example.com" required />
           </label>
 
           <label v-if="isRegister" class="modal-field">
-            <span>手机号</span>
-            <input v-model="form.mobile" type="tel" placeholder="选填" />
+            <span>{{ t('pc.auth.mobile') }}</span>
+            <input v-model="form.mobile" type="tel" :placeholder="t('pc.auth.optional')" />
           </label>
 
           <!-- 图形验证码：SVG 直接渲染，点击刷新 -->
           <label class="modal-field">
-            <span>图形验证码 <em>*</em></span>
+            <span>{{ t('pc.auth.captcha') }} <em>*</em></span>
             <div class="captcha-row">
-              <input v-model="form.captchaAnswer" placeholder="输入图中算式结果" required />
-              <div class="captcha-img" title="点击刷新" @click="refreshCaptcha">
+              <input v-model="form.captchaAnswer" :placeholder="t('pc.auth.captchaPh')" required />
+              <div class="captcha-img" :title="t('pc.auth.clickRefresh')" @click="refreshCaptcha">
                 <img v-if="captchaSrc" :src="captchaSrc" alt="captcha" />
-                <span v-else>点击获取</span>
+                <span v-else>{{ t('pc.auth.clickGet') }}</span>
               </div>
             </div>
           </label>
 
           <!-- 邮件验证码 -->
           <label class="modal-field">
-            <span>邮件验证码 <em>*</em></span>
+            <span>{{ t('pc.auth.emailCode') }} <em>*</em></span>
             <div class="captcha-row">
-              <input v-model="form.emailCode" placeholder="6 位验证码" required />
+              <input v-model="form.emailCode" :placeholder="t('pc.auth.emailCodePh')" required />
               <button
                 type="button"
                 class="btn-send-code"
                 :disabled="codeCooldown > 0 || sendingCode"
                 @click="handleSendCode"
               >
-                {{ sendingCode ? '发送中...' : (codeCooldown > 0 ? `${codeCooldown}s` : '发送验证码') }}
+                {{ sendingCode ? t('pc.auth.sending') : (codeCooldown > 0 ? `${codeCooldown}s` : t('pc.auth.sendCode')) }}
               </button>
             </div>
           </label>
@@ -62,13 +62,13 @@
           <div v-if="error" class="pc-error-toast inline">{{ error }}</div>
 
           <button class="wide-button" type="submit" :disabled="loading">
-            {{ loading ? '请稍候...' : (isRegister ? '注册并登录' : '登录') }}
+            {{ loading ? t('pc.auth.pleaseWait') : (isRegister ? t('pc.auth.registerAndLogin') : t('pc.auth.login')) }}
           </button>
         </form>
 
         <div class="auth-switch">
-          <span>{{ isRegister ? '已有账户？' : '还没有账户？' }}</span>
-          <a href="#" @click.prevent="toggleMode">{{ isRegister ? '去登录' : '注册新账户' }}</a>
+          <span>{{ isRegister ? t('pc.auth.hasAccount') : t('pc.auth.noAccount') }}</span>
+          <a href="#" @click.prevent="toggleMode">{{ isRegister ? t('pc.auth.goLogin') : t('pc.auth.registerNew') }}</a>
         </div>
       </section>
     </div>
@@ -79,10 +79,12 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUser } from '../composables/user.js'
+import { useLocale } from '../composables/useLocale.js'
 
 const route = useRoute()
 const router = useRouter()
 const user = useUser()
+const { t } = useLocale()
 
 const isRegister = ref(route.query.mode === 'register')
 const loading = ref(false)
@@ -127,8 +129,8 @@ onMounted(refreshCaptcha)
 
 async function handleSendCode() {
   error.value = ''
-  if (!form.email) { error.value = '请先填写邮箱'; return }
-  if (!form.captchaId || !form.captchaAnswer) { error.value = '请先完成图形验证码'; return }
+  if (!form.email) { error.value = t('pc.auth.emailRequired'); return }
+  if (!form.captchaId || !form.captchaAnswer) { error.value = t('pc.auth.captchaRequired'); return }
   sendingCode.value = true
   try {
     await user.sendEmailCode({ email: form.email, captchaId: form.captchaId, captchaAnswer: form.captchaAnswer })
@@ -136,7 +138,7 @@ async function handleSendCode() {
     refreshCaptcha()
     form.captchaAnswer = ''
   } catch (e) {
-    error.value = e.message || '验证码发送失败'
+    error.value = e.message || t('pc.auth.sendCodeFailed')
     refreshCaptcha()
     form.captchaAnswer = ''
   } finally {
@@ -180,7 +182,7 @@ async function handleSubmit() {
     }
     router.replace(route.query.redirect || '/orders')
   } catch (e) {
-    error.value = e.message || '操作失败，请重试'
+    error.value = e.message || t('pc.auth.operationFailed')
     refreshCaptcha()
     form.captchaAnswer = ''
   } finally {

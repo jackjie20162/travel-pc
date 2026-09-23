@@ -1,10 +1,10 @@
 <template>
   <div class="page order-detail-page">
     <div class="container narrow">
-      <div v-if="loading" class="state-panel">加载中...</div>
-      <div v-else-if="!order" class="state-panel">订单不存在。</div>
+      <div v-if="loading" class="state-panel">{{ t('pc.orderDetail.loading') }}</div>
+      <div v-else-if="!order" class="state-panel">{{ t('pc.orderDetail.notFound') }}</div>
       <template v-else>
-        <div v-if="route.query.paid" class="paid-banner">支付已完成，商户接单后可查看电子凭证。</div>
+        <div v-if="route.query.paid" class="paid-banner">{{ t('pc.orderDetail.paidBanner') }}</div>
 
         <!-- 状态头 -->
         <div class="order-status-header" :class="order.status">
@@ -17,34 +17,34 @@
               v-if="order.status === 'PENDING_PAYMENT'"
               class="wide-button inline"
               :to="{ name: 'Payment', query: { orderNo: order.orderNo, totalAmount: order.totalAmount, currency: order.currency, displayAmount: order.displayAmount, displayCurrency: order.displayCurrency } }"
-            >去支付</RouterLink>
-            <button v-if="canCancel" type="button" class="btn-secondary danger" @click="showCancelDialog">取消订单</button>
-            <button v-if="canRequestRefund" type="button" class="btn-secondary" @click="showRefundDialog">申请退款</button>
-            <button type="button" class="btn-secondary" @click="consultOrder">💬 咨询此订单</button>
+            >{{ t('pc.orderDetail.goPay') }}</RouterLink>
+            <button v-if="canCancel" type="button" class="btn-secondary danger" @click="showCancelDialog">{{ t('pc.orderDetail.cancelOrder') }}</button>
+            <button v-if="canRequestRefund" type="button" class="btn-secondary" @click="showRefundDialog">{{ t('pc.orderDetail.requestRefund') }}</button>
+            <button type="button" class="btn-secondary" @click="consultOrder">{{ t('pc.orderDetail.consultOrder') }}</button>
           </div>
         </div>
 
         <!-- 订单信息 -->
         <section class="pc-card">
-          <h3>订单信息</h3>
-          <div class="summary-line"><span>商品</span><span>{{ order.productTitle || '中东体验' }}</span></div>
-          <div class="summary-line"><span>出行日期</span><span>{{ order.date || '--' }}</span></div>
-          <div class="summary-line"><span>场次</span><span>{{ order.timeSlot || '--' }}</span></div>
-          <div class="summary-line"><span>数量</span><span>{{ order.quantity || 1 }}</span></div>
-          <div class="summary-line"><span>下单时间</span><span>{{ formatDateTime(order.createtime || order.createTime) }}</span></div>
-          <div class="summary-line total"><span>实付金额</span><strong>{{ orderAmountText(order) }}</strong></div>
+          <h3>{{ t('pc.orderDetail.orderInfo') }}</h3>
+          <div class="summary-line"><span>{{ t('pc.orderDetail.product') }}</span><span>{{ order.productTitle || t('pc.orderDetail.defaultProduct') }}</span></div>
+          <div class="summary-line"><span>{{ t('pc.orderDetail.travelDate') }}</span><span>{{ order.date || '--' }}</span></div>
+          <div class="summary-line"><span>{{ t('pc.orderDetail.timeSlot') }}</span><span>{{ order.timeSlot || '--' }}</span></div>
+          <div class="summary-line"><span>{{ t('pc.orderDetail.quantity') }}</span><span>{{ order.quantity || 1 }}</span></div>
+          <div class="summary-line"><span>{{ t('pc.orderDetail.createTime') }}</span><span>{{ formatDateTime(order.createtime || order.createTime) }}</span></div>
+          <div class="summary-line total"><span>{{ t('pc.orderDetail.paidAmount') }}</span><strong>{{ orderAmountText(order) }}</strong></div>
         </section>
 
         <!-- 联系人与出行人 -->
         <section class="pc-card">
-          <h3>联系人</h3>
-          <div class="summary-line"><span>姓名</span><span>{{ order.customerName || '--' }}</span></div>
-          <div class="summary-line"><span>邮箱</span><span>{{ order.customerEmail || '--' }}</span></div>
-          <div class="summary-line"><span>电话</span><span>{{ order.customerPhone || '--' }}</span></div>
+          <h3>{{ t('pc.orderDetail.contact') }}</h3>
+          <div class="summary-line"><span>{{ t('pc.orderDetail.name') }}</span><span>{{ order.customerName || '--' }}</span></div>
+          <div class="summary-line"><span>{{ t('pc.orderDetail.email') }}</span><span>{{ order.customerEmail || '--' }}</span></div>
+          <div class="summary-line"><span>{{ t('pc.orderDetail.phone') }}</span><span>{{ order.customerPhone || '--' }}</span></div>
         </section>
 
         <section v-if="travelers.length" class="pc-card">
-          <h3>出行人信息</h3>
+          <h3>{{ t('pc.orderDetail.travelerInfo') }}</h3>
           <div class="travelers-grid">
             <div v-for="(tr, idx) in travelers" :key="idx" class="traveler-row">
               <strong>{{ tr.name }}</strong>
@@ -54,29 +54,29 @@
         </section>
 
         <section v-if="order.remark" class="pc-card">
-          <h3>特殊需求</h3>
+          <h3>{{ t('pc.orderDetail.specialNeeds') }}</h3>
           <p>{{ order.remark }}</p>
         </section>
 
         <!-- 电子凭证 -->
         <section v-if="order.status === 'PENDING_VERIFY' || order.status === 'VERIFIED'" class="pc-card voucher-card">
-          <h3>电子凭证</h3>
+          <h3>{{ t('pc.orderDetail.voucher') }}</h3>
           <div class="voucher-box">
             <div class="voucher-no mono">{{ order.voucherNo || order.orderNo }}</div>
-            <small>请在集合点向工作人员出示凭证号核销</small>
+            <small>{{ t('pc.orderDetail.voucherHint') }}</small>
           </div>
         </section>
 
         <!-- 退款处理中 -->
         <section v-if="order.status === 'PENDING_REFUND'" class="pc-card refund-notice">
-          <h3>退款申请中</h3>
-          <p>您的退款申请已提交，等待商户处理。</p>
-          <p v-if="order.rejectReason" class="muted">商户回复：{{ order.rejectReason }}</p>
+          <h3>{{ t('pc.orderDetail.refundPending') }}</h3>
+          <p>{{ t('pc.orderDetail.refundPendingDesc') }}</p>
+          <p v-if="order.rejectReason" class="muted">{{ t('pc.orderDetail.merchantReply') }}{{ order.rejectReason }}</p>
         </section>
 
         <div class="detail-back">
-          <RouterLink class="btn-secondary" to="/orders">返回订单列表</RouterLink>
-          <RouterLink class="text-link" to="/">继续浏览</RouterLink>
+          <RouterLink class="btn-secondary" to="/orders">{{ t('pc.orderDetail.backToList') }}</RouterLink>
+          <RouterLink class="text-link" to="/">{{ t('pc.orderDetail.continueBrowse') }}</RouterLink>
         </div>
       </template>
     </div>
@@ -85,18 +85,18 @@
     <div v-if="cancelDialogVisible" class="pc-modal-overlay" @click.self="cancelDialogVisible = false">
       <div class="pc-modal">
         <div class="pc-modal-header">
-          <h3>取消订单</h3>
+          <h3>{{ t('pc.orderDetail.cancelTitle') }}</h3>
           <button type="button" class="modal-close" @click="cancelDialogVisible = false">✕</button>
         </div>
-        <p class="muted hint">仅未支付的订单可直接取消；已支付订单请走「申请退款」。</p>
+        <p class="muted hint">{{ t('pc.orderDetail.cancelHint') }}</p>
         <label class="modal-field">
-          <span>取消原因</span>
-          <textarea v-model="cancelReason" rows="3" placeholder="请说明取消原因"></textarea>
+          <span>{{ t('pc.orderDetail.cancelReason') }}</span>
+          <textarea v-model="cancelReason" rows="3" :placeholder="t('pc.orderDetail.cancelReasonPh')"></textarea>
         </label>
         <div class="modal-actions">
-          <button type="button" class="btn-secondary" @click="cancelDialogVisible = false">返回</button>
+          <button type="button" class="btn-secondary" @click="cancelDialogVisible = false">{{ t('pc.orderDetail.back') }}</button>
           <button type="button" class="btn-secondary danger" :disabled="!cancelReason.trim() || cancelling" @click="handleCancel">
-            {{ cancelling ? '提交中...' : '确认取消' }}
+            {{ cancelling ? t('pc.orderDetail.submitting') : t('pc.orderDetail.confirmCancel') }}
           </button>
         </div>
       </div>
@@ -106,18 +106,18 @@
     <div v-if="refundDialogVisible" class="pc-modal-overlay" @click.self="refundDialogVisible = false">
       <div class="pc-modal">
         <div class="pc-modal-header">
-          <h3>申请退款</h3>
+          <h3>{{ t('pc.orderDetail.refundTitle') }}</h3>
           <button type="button" class="modal-close" @click="refundDialogVisible = false">✕</button>
         </div>
-        <p class="muted hint">退款申请提交后需等待商户审批，按退订政策可能收取损失费。</p>
+        <p class="muted hint">{{ t('pc.orderDetail.refundHint') }}</p>
         <label class="modal-field">
-          <span>退款原因</span>
-          <textarea v-model="refundReason" rows="3" placeholder="请说明退款原因"></textarea>
+          <span>{{ t('pc.orderDetail.refundReason') }}</span>
+          <textarea v-model="refundReason" rows="3" :placeholder="t('pc.orderDetail.refundReasonPh')"></textarea>
         </label>
         <div class="modal-actions">
-          <button type="button" class="btn-secondary" @click="refundDialogVisible = false">返回</button>
+          <button type="button" class="btn-secondary" @click="refundDialogVisible = false">{{ t('pc.orderDetail.back') }}</button>
           <button type="button" class="btn-secondary" :disabled="!refundReason.trim() || requestingRefund" @click="handleRequestRefund">
-            {{ requestingRefund ? '提交中...' : '提交申请' }}
+            {{ requestingRefund ? t('pc.orderDetail.submitting') : t('pc.orderDetail.submitRequest') }}
           </button>
         </div>
       </div>
@@ -132,23 +132,24 @@ import { ref, computed, onMounted } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { getOrder, cancelOrder, requestRefund } from '../api.js'
 import { statusText, orderAmountText } from '../utils/order.js'
+import { useLocale } from '../composables/useLocale.js'
 import { imOpenSupport } from '../plugin/im/imStore'
 
 const route = useRoute()
+const { t, locale } = useLocale()
 const order = ref(null)
 const loading = ref(true)
 const actionError = ref('')
 
-const ID_TYPE_LABELS = { passport: '护照', id_card: '身份证', other_id: '其他证件' }
 function idTypeLabel(val) {
-  return ID_TYPE_LABELS[val] || val || '证件'
+  return val ? t(`pc.orderDetail.idTypes.${val}`) : t('pc.orderDetail.idLabel')
 }
 
 function formatDateTime(ts) {
   if (!ts) return '--'
   const n = Number(ts)
   if (Number.isNaN(n)) return String(ts)
-  return new Date(n * (n > 1e12 ? 1 : 1000)).toLocaleString('zh-CN')
+  return new Date(n * (n > 1e12 ? 1 : 1000)).toLocaleString(locale.value)
 }
 
 const travelers = computed(() => order.value?.travelers || [])
@@ -187,7 +188,7 @@ async function handleCancel() {
     cancelDialogVisible.value = false
     await loadOrder()
   } catch (e) {
-    actionError.value = e.message || '取消失败'
+    actionError.value = e.message || t('pc.orderDetail.cancelFailed')
   } finally {
     cancelling.value = false
   }
@@ -207,7 +208,7 @@ async function handleRequestRefund() {
     refundDialogVisible.value = false
     await loadOrder()
   } catch (e) {
-    actionError.value = e.message || '申请失败'
+    actionError.value = e.message || t('pc.orderDetail.refundFailed')
   } finally {
     requestingRefund.value = false
   }

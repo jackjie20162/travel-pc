@@ -1,17 +1,17 @@
 <template>
   <div id="top" class="page detail-page">
-    <div v-if="loading" class="container state-panel detail-state">正在加载产品详情...</div>
-    <div v-else-if="!product" class="container state-panel detail-state">商品不存在或已下架。</div>
+    <div v-if="loading" class="container state-panel detail-state">{{ t('pc.product.loading') }}</div>
+    <div v-else-if="!product" class="container state-panel detail-state">{{ t('pc.product.notFound') }}</div>
     <template v-else>
       <section class="container detail-head">
         <div>
-          <RouterLink class="breadcrumb" :to="`/destinations/${destinationSlug}`">{{ destinationName }}活动</RouterLink>
+          <RouterLink class="breadcrumb" :to="`/destinations/${destinationSlug}`">{{ destinationName }}{{ t('pc.product.activitiesSuffix') }}</RouterLink>
           <h1>{{ title }}</h1>
           <div class="detail-meta">
             <strong>4.8</strong>
-            <span>128 条评价</span>
+            <span>{{ t('pc.product.reviewCount') }}</span>
             <span>{{ destinationName }}</span>
-            <span>电子凭证</span>
+            <span>{{ t('pc.product.eVoucher') }}</span>
           </div>
         </div>
       </section>
@@ -25,65 +25,65 @@
         <article class="detail-content">
           <div class="quick-facts">
             <div>
-              <strong>免费取消</strong>
-              <span>按产品退订政策执行</span>
+              <strong>{{ t('pc.product.freeCancel') }}</strong>
+              <span>{{ t('pc.product.freeCancelDesc') }}</span>
             </div>
             <div>
-              <strong>立即确认</strong>
-              <span>库存充足时自动确认</span>
+              <strong>{{ t('pc.product.instantConfirm') }}</strong>
+              <span>{{ t('pc.product.instantConfirmDesc') }}</span>
             </div>
             <div>
-              <strong>本地服务</strong>
-              <span>支持中英文沟通</span>
+              <strong>{{ t('pc.product.localService') }}</strong>
+              <span>{{ t('pc.product.localServiceDesc') }}</span>
             </div>
           </div>
 
           <section class="detail-section">
-            <h2>体验亮点</h2>
+            <h2>{{ t('pc.product.highlights') }}</h2>
             <ul class="highlight-list">
               <li v-for="item in highlights" :key="item">{{ item }}</li>
             </ul>
           </section>
 
           <section class="detail-section">
-            <h2>完整描述</h2>
+            <h2>{{ t('pc.product.description') }}</h2>
             <p>{{ description }}</p>
           </section>
 
           <section v-if="itinerary.length" class="detail-section">
-            <h2>行程安排</h2>
+            <h2>{{ t('pc.product.itinerary') }}</h2>
             <div class="timeline">
               <div v-for="(stop, index) in itinerary" :key="stop.id || index" class="timeline-item">
                 <span class="timeline-number">{{ index + 1 }}</span>
                 <div>
-                  <strong>{{ stop.title || stop.pointName || stop.name || `第 ${index + 1} 站` }}</strong>
-                  <p>{{ stop.description || stop.desc || stop.duration || '以商户发布的行程信息为准。' }}</p>
+                  <strong>{{ stop.title || stop.pointName || stop.name || t('pc.product.stopDefault', { index: index + 1 }) }}</strong>
+                  <p>{{ stop.description || stop.desc || stop.duration || t('pc.product.itineraryFallback') }}</p>
                 </div>
               </div>
             </div>
           </section>
 
           <section v-if="product.bookingNotice" class="detail-section">
-            <h2>预订须知</h2>
+            <h2>{{ t('pc.product.bookingNotice') }}</h2>
             <p>{{ product.bookingNotice }}</p>
           </section>
 
           <section v-if="videoUrl" class="detail-section">
-            <h2>宣传视频</h2>
+            <h2>{{ t('pc.product.video') }}</h2>
             <video v-if="!videoIsHls" :src="videoUrl" controls playsinline preload="metadata" style="width:100%;max-height:480px;border-radius:12px;background:#000"></video>
-            <a v-else :href="videoUrl" target="_blank" rel="noopener">播放宣传视频（HLS）▶</a>
+            <a v-else :href="videoUrl" target="_blank" rel="noopener">{{ t('pc.product.videoHls') }}</a>
           </section>
         </article>
 
         <!-- 预订面板：与 travel-app 一致的 套餐 → 日期 → 人数 选择链路 -->
         <aside class="booking-panel">
           <div class="panel-price-line">
-            <span class="panel-label">每人起</span>
+            <span class="panel-label">{{ t('pc.product.fromPerPerson') }}</span>
             <strong class="panel-price">{{ minPriceText }}</strong>
           </div>
 
           <div class="panel-group">
-            <span class="panel-group-title">选择套餐</span>
+            <span class="panel-group-title">{{ t('pc.product.selectPackage') }}</span>
             <div class="pkg-list">
               <button
                 v-for="pkg in packages"
@@ -93,16 +93,16 @@
                 :class="{ active: String(pkg.id) === String(selectedPackageId) }"
                 @click="selectPkg(pkg)"
               >
-                <span class="pkg-name">{{ pkg.name || pkg.title || pkg.code || `套餐 ${pkg.id}` }}</span>
+                <span class="pkg-name">{{ pkg.name || pkg.title || pkg.code || t('pc.product.pkgDefault', { id: pkg.id }) }}</span>
                 <span v-if="pkg.description" class="pkg-desc">{{ pkg.description }}</span>
               </button>
-              <div v-if="!packages.length" class="pkg-empty">该商品暂无可售套餐</div>
+              <div v-if="!packages.length" class="pkg-empty">{{ t('pc.product.pkgEmpty') }}</div>
             </div>
           </div>
 
           <div class="panel-group">
-            <span class="panel-group-title">选择日期</span>
-            <div v-if="inventoryLoading" class="date-loading">正在查询可订日期...</div>
+            <span class="panel-group-title">{{ t('pc.product.selectDate') }}</span>
+            <div v-if="inventoryLoading" class="date-loading">{{ t('pc.product.dateLoading') }}</div>
             <div v-else class="pc-date-strip">
               <button
                 v-for="d in dateStrip"
@@ -119,25 +119,25 @@
               </button>
             </div>
             <p v-if="selectedInventory" class="dc-hint">
-              当日余票 {{ remaining }} 份，最多可订 {{ maxQty }} 份
+              {{ t('pc.product.remainingHint', { remaining, max: maxQty }) }}
             </p>
           </div>
 
           <div class="panel-group">
-            <span class="panel-group-title">人数</span>
+            <span class="panel-group-title">{{ t('pc.product.people') }}</span>
             <div class="pc-stepper">
               <button type="button" class="stepper-btn" :disabled="quantity <= 1" @click="decreaseQty">−</button>
               <span class="stepper-value">{{ quantity }}</span>
               <button type="button" class="stepper-btn" :disabled="quantity >= maxQty" @click="increaseQty">+</button>
-              <span class="stepper-total">总价 {{ totalText }}</span>
+              <span class="stepper-total">{{ t('pc.product.totalLabel', { amount: totalText }) }}</span>
             </div>
           </div>
 
           <button class="wide-button" type="button" :disabled="!canBook" @click="goBooking">
-            {{ selectedDate && selectedPackageId ? '立即预订' : '请选择套餐和日期' }}
+            {{ selectedDate && selectedPackageId ? t('pc.product.bookNow') : t('pc.product.selectPkgDate') }}
           </button>
-          <button class="wide-button ghost" type="button" @click="consultSupport">💬 咨询客服</button>
-          <p class="panel-note">下一步填写联系人和出行人信息，库存预留由后端在下单时完成。</p>
+          <button class="wide-button ghost" type="button" @click="consultSupport">{{ t('pc.product.consultSupport') }}</button>
+          <p class="panel-note">{{ t('pc.product.panelNote') }}</p>
         </aside>
       </section>
     </template>
@@ -150,6 +150,7 @@ import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { batchInventory, getProductDetail, getProductItineraryStops, getProductPackages } from '../api.js'
 import { useUser } from '../composables/user.js'
 import { destinations } from '../data/middleEast.js'
+import { useLocale } from '../composables/useLocale.js'
 import {
   formatPrice,
   productCover,
@@ -167,6 +168,7 @@ import { imOpenSupport } from '../plugin/im/imStore'
 const route = useRoute()
 const router = useRouter()
 const user = useUser()
+const { t, tm } = useLocale()
 
 const product = ref(null)
 const packages = ref([])
@@ -181,7 +183,10 @@ const inventoryLoading = ref(false)
 /** 库存缓存: { dateStr: inventoryItem }，字段与 batchInventory 返回一致 */
 const inventoryCache = ref({})
 
-const WEEKDAYS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+const WEEKDAYS = computed(() => {
+  const days = tm('pc.product.weekday')
+  return Array.isArray(days) ? days : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+})
 
 const title = computed(() => productTitle(product.value))
 const description = computed(() => productDescription(product.value))
@@ -204,7 +209,11 @@ const sideImages = computed(() => {
 const highlights = computed(() => {
   const items = splitCsv(product.value?.highlights)
   if (items.length) return items
-  return ['专业本地向导或供应商服务', '适合中东自由行与家庭出游', '订单确认后可在线查看凭证']
+  return [
+    t('pc.product.highlightFallback1'),
+    t('pc.product.highlightFallback2'),
+    t('pc.product.highlightFallback3'),
+  ]
 })
 const price = computed(() => productPrice(product.value))
 const currency = computed(() => productCurrency(product.value))
@@ -256,7 +265,7 @@ const dateStrip = computed(() => {
     const available = !!selectedPackageId.value && (!inv || inv.isOpen !== false)
     days.push({
       dateStr,
-      weekday: WEEKDAYS[d.getDay()],
+      weekday: WEEKDAYS.value[d.getDay()],
       day: d.getDate(),
       price: inv ? inv.unitPrice : null,
       currency: inv ? inv.currency : null,
