@@ -20,6 +20,7 @@
             >去支付</RouterLink>
             <button v-if="canCancel" type="button" class="btn-secondary danger" @click="showCancelDialog">取消订单</button>
             <button v-if="canRequestRefund" type="button" class="btn-secondary" @click="showRefundDialog">申请退款</button>
+            <button type="button" class="btn-secondary" @click="consultOrder">💬 咨询此订单</button>
           </div>
         </div>
 
@@ -131,6 +132,7 @@ import { ref, computed, onMounted } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { getOrder, cancelOrder, requestRefund } from '../api.js'
 import { statusText, orderAmountText } from '../utils/order.js'
+import { imOpenSupport } from '../plugin/im/imStore'
 
 const route = useRoute()
 const order = ref(null)
@@ -150,6 +152,12 @@ function formatDateTime(ts) {
 }
 
 const travelers = computed(() => order.value?.travelers || [])
+
+/** 咨询此订单：打开 IM 抽屉并自动发送订单卡片（contentType=4） */
+function consultOrder() {
+  if (!order.value) return
+  imOpenSupport({ order: order.value })
+}
 
 // 待支付可取消；待接单/待核销可申请退款（与 travel-app 状态机一致）
 const canCancel = computed(() => order.value?.status === 'PENDING_PAYMENT')

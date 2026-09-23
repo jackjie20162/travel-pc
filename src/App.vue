@@ -23,6 +23,16 @@
           <option v-for="c in currencyList" :key="c.code" :value="c.code">{{ c.code }}</option>
         </select>
         <RouterLink v-if="user.isLoggedIn.value" to="/orders">我的订单</RouterLink>
+        <button
+          v-if="user.isLoggedIn.value"
+          type="button"
+          class="nav-support"
+          :class="{ alert: imState.orderAlert > 0 }"
+          @click="openSupport"
+        >
+          客服
+          <span v-if="imState.unreadTotal > 0" class="nav-badge">{{ imState.unreadTotal > 99 ? '99+' : imState.unreadTotal }}</span>
+        </button>
         <template v-if="user.isLoggedIn.value">
           <span class="nav-user" :title="user.email.value">{{ user.nickname.value || user.username.value }}</span>
           <button type="button" class="nav-logout" @click="handleLogout">退出</button>
@@ -46,6 +56,8 @@
         <RouterLink to="/destinations/abu-dhabi">探索阿布扎比</RouterLink>
       </div>
     </footer>
+
+    <ImSupportDrawer />
   </div>
 </template>
 
@@ -54,6 +66,8 @@ import { ref, watch, onMounted } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { useUser } from './composables/user.js'
 import { currencies, selectedCurrency, setSelectedCurrency } from './utils/currency.js'
+import ImSupportDrawer from './plugin/im/ImSupportDrawer.vue'
+import { imState, imConnect, imDisconnect, imOpenSupport } from './plugin/im/imStore'
 
 const route = useRoute()
 const router = useRouter()
@@ -74,13 +88,28 @@ function onCurrencyChange() {
 }
 
 function handleLogout() {
+  imDisconnect()
   user.logout()
   router.push({ name: 'Home' })
 }
 
+function openSupport() {
+  imOpenSupport()
+}
+
+// 登录态变化驱动 IM 连接：登录后常驻在线接收订单推送，登出断开
+watch(
+  () => user.isLoggedIn.value,
+  (logged) => {
+    if (logged) imConnect()
+    else imDisconnect()
+  },
+)
+
 // 已登录时刷新用户资料；仅在 token 失效(401/403)时由 fetchProfile 内部登出
 onMounted(() => {
   if (user.isLoggedIn.value) {
+    imConnect()
     user.fetchProfile().catch(() => { /* 保留本地登录态，失败不强制登出 */ })
   }
 })

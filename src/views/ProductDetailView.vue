@@ -136,6 +136,7 @@
           <button class="wide-button" type="button" :disabled="!canBook" @click="goBooking">
             {{ selectedDate && selectedPackageId ? '立即预订' : '请选择套餐和日期' }}
           </button>
+          <button class="wide-button ghost" type="button" @click="consultSupport">💬 咨询客服</button>
           <p class="panel-note">下一步填写联系人和出行人信息，库存预留由后端在下单时完成。</p>
         </aside>
       </section>
@@ -161,6 +162,7 @@ import {
   splitCsv,
 } from '../utils/product.js'
 import { resolveMediaList } from '../utils/media.js'
+import { imOpenSupport } from '../plugin/im/imStore'
 
 const route = useRoute()
 const router = useRouter()
@@ -333,6 +335,23 @@ function goBooking() {
   }
   if (selectedInventory.value?.id) query.inventoryId = selectedInventory.value.id
   router.push({ name: 'Booking', query })
+}
+
+/** 咨询客服：打开 IM 抽屉并自动发送当前商品卡片（contentType=3） */
+function consultSupport() {
+  if (!user.isLoggedIn.value) {
+    router.push({ name: 'Login', query: { redirect: route.fullPath } })
+    return
+  }
+  imOpenSupport({
+    product: {
+      id: product.value.id,
+      title: title.value,
+      coverImage: cover.value,
+      minPrice: price.value,
+      destination: destinationName.value,
+    },
+  })
 }
 
 async function load() {
