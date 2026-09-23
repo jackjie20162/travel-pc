@@ -1,4 +1,5 @@
 import { resolveMediaUrl } from './media.js'
+import { formatPrice as formatPriceCurrency } from './currency.js'
 
 export function productTitle(product) {
   return product?.title || product?.name || '中东精选体验'
@@ -25,10 +26,13 @@ export function productCurrency(product) {
   return product?.currency || 'AED'
 }
 
-export function formatPrice(value) {
-  const numeric = Number(value || 0)
-  if (!numeric) return '--'
-  return numeric.toLocaleString('en-US', { maximumFractionDigits: 2 })
+/**
+ * 价格展示：金额以后端币种（默认基准币 AED，单位为元不除 100）换算为当前展示币种后格式化。
+ * @param {number|string} value 金额
+ * @param {string} [from] 金额自身币种（如库存 unitPrice 的 currency）
+ */
+export function formatPrice(value, from) {
+  return formatPriceCurrency(value, { from })
 }
 
 export function firstImage(images) {
