@@ -12,10 +12,11 @@ The client never connects directly to `travel-rpc`, MySQL, `merchant-api2`, or `
 
 1. Install Node.js 20+ and Rust/Tauri prerequisites.
 2. API requests use relative paths proxied by Vite (`/api` -> `VITE_TRAVEL_API_BASE_URL`, default `http://localhost:9206`), same as travel-app; set `VITE_TRAVEL_API_ORIGIN` only if the client must call a different origin directly (requires backend CORS).
-3. `npm install`
-4. `npm run dev` for browser/H5-style testing.
-5. `npm run tauri dev` for the Tauri desktop shell.
-6. `npm run build` verifies the web production build.
+3. Set `VITE_TRAVEL_TENANT_ID` / `VITE_TRAVEL_MERCHANT_ID` to match the merchant data you want to show (local test data lives under tenant 2 / merchant 1; the travel-app stores the same values in localStorage `travel_tenant_id` / `travel_merchant_id`, which override the build-time defaults per browser).
+4. `npm install`
+5. `npm run dev` for browser/H5-style testing.
+6. `npm run tauri dev` for the Tauri desktop shell.
+7. `npm run build` verifies the web production build.
 
 The catalog page reads real data from `GET /api/travel/products`; no product price or inventory is fabricated by the client.
 

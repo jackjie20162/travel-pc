@@ -21,12 +21,13 @@ const STORAGE_CURRENCY = 'travel_currency'
 // 确需指向其他 origin 时单独设置 VITE_TRAVEL_API_ORIGIN。
 const baseUrl = (import.meta.env.VITE_TRAVEL_API_ORIGIN || '').replace(/\/$/, '')
 
+/** 租户/商户默认值可在构建时通过 VITE_TRAVEL_TENANT_ID / VITE_TRAVEL_MERCHANT_ID 指定（PC 站通常固定服务单一商户），localStorage 可覆盖 */
 export function getTenantId() {
-  return localStorage.getItem(STORAGE_TENANT) || '1'
+  return localStorage.getItem(STORAGE_TENANT) || import.meta.env.VITE_TRAVEL_TENANT_ID || '1'
 }
 
 export function getMerchantId() {
-  return localStorage.getItem(STORAGE_MERCHANT) || '1'
+  return localStorage.getItem(STORAGE_MERCHANT) || import.meta.env.VITE_TRAVEL_MERCHANT_ID || '1'
 }
 
 export function getLocale() {
