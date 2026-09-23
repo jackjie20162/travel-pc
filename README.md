@@ -11,7 +11,7 @@ The client never connects directly to `travel-rpc`, MySQL, `merchant-api2`, or `
 ## Local test
 
 1. Install Node.js 20+ and Rust/Tauri prerequisites.
-2. Set `VITE_TRAVEL_API_BASE_URL` if Travel API is not `http://localhost:9200`.
+2. API requests use relative paths proxied by Vite (`/api` -> `VITE_TRAVEL_API_BASE_URL`, default `http://localhost:9206`), same as travel-app; set `VITE_TRAVEL_API_ORIGIN` only if the client must call a different origin directly (requires backend CORS).
 3. `npm install`
 4. `npm run dev` for browser/H5-style testing.
 5. `npm run tauri dev` for the Tauri desktop shell.

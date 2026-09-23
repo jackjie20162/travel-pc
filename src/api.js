@@ -16,8 +16,10 @@ const STORAGE_USER = 'travel_user_info'
 const STORAGE_LOCALE = 'travel_locale'
 const STORAGE_CURRENCY = 'travel_currency'
 
-const configuredBase = (import.meta.env.VITE_TRAVEL_API_BASE_URL || '').replace(/\/$/, '')
-const baseUrl = configuredBase || ''
+// 统一使用相对路径：开发环境由 vite proxy 转发（/api -> travel-api），生产环境同源 nginx 反代，
+// 避免跨域直连触发 CORS 预检失败（与 travel-app 一致）。
+// 确需指向其他 origin 时单独设置 VITE_TRAVEL_API_ORIGIN。
+const baseUrl = (import.meta.env.VITE_TRAVEL_API_ORIGIN || '').replace(/\/$/, '')
 
 export function getTenantId() {
   return localStorage.getItem(STORAGE_TENANT) || '1'
