@@ -874,6 +874,85 @@ button:disabled {
   margin: 6px 0 0;
 }
 
+.attraction-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.attraction-card {
+  overflow: hidden;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+.attraction-img {
+  display: block;
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  background: #e2e8f0;
+}
+
+.attraction-img-empty {
+  background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+}
+
+.attraction-body {
+  padding: 12px 14px 14px;
+}
+
+.attraction-name {
+  display: block;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.attraction-en {
+  display: block;
+  margin-top: 2px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.attraction-desc {
+  margin: 8px 0 0;
+  color: #475569;
+  font-size: 13px;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.attraction-meta {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 4px;
+  color: #475569;
+  font-size: 12px;
+}
+
+.attraction-map {
+  display: inline-block;
+  margin-top: 10px;
+  color: #0f766e;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  text-decoration: none;
+}
+
+.attraction-map:hover {
+  text-decoration: underline;
+}
+
 .booking-panel {
   box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12);
 }

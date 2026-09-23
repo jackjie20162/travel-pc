@@ -63,6 +63,34 @@
             </div>
           </section>
 
+          <section v-if="attractions.length" class="detail-section">
+            <h2>{{ t('pc.product.attractions') }}</h2>
+            <div class="attraction-grid">
+              <article v-for="a in attractions" :key="a.id" class="attraction-card">
+                <img v-if="a.coverImage" class="attraction-img" :src="a.coverImage" :alt="a.name" />
+                <div v-else class="attraction-img attraction-img-empty"></div>
+                <div class="attraction-body">
+                  <strong class="attraction-name">{{ a.name }}</strong>
+                  <span v-if="a.nameEn" class="attraction-en">{{ a.nameEn }}</span>
+                  <p v-if="a.description" class="attraction-desc">{{ a.description }}</p>
+                  <ul class="attraction-meta">
+                    <li v-if="a.city || a.address">📍 {{ [a.city, a.address].filter(Boolean).join(' · ') }}</li>
+                    <li v-if="a.openingHours">🕐 {{ t('pc.product.attractionHours') }}: {{ a.openingHours }}</li>
+                    <li v-if="a.suggestedDuration">⏱ {{ t('pc.product.attractionDuration') }}: {{ a.suggestedDuration }}</li>
+                    <li v-if="a.ticketInfo">🎟 {{ t('pc.product.attractionTicket') }}: {{ a.ticketInfo }}</li>
+                  </ul>
+                  <a
+                    v-if="a.latitude && a.longitude"
+                    class="attraction-map"
+                    :href="`https://www.google.com/maps?q=${a.latitude},${a.longitude}`"
+                    target="_blank"
+                    rel="noopener"
+                  >🗺 {{ Number(a.longitude).toFixed(5) }}, {{ Number(a.latitude).toFixed(5) }}</a>
+                </div>
+              </article>
+            </div>
+          </section>
+
           <section v-if="product.bookingNotice" class="detail-section">
             <h2>{{ t('pc.product.bookingNotice') }}</h2>
             <p>{{ product.bookingNotice }}</p>
@@ -147,7 +175,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { batchInventory, getProductDetail, getProductItineraryStops, getProductPackages } from '../api.js'
+import { batchInventory, getProductDetail, getProductItineraryStops, getProductPackages, getProductAttractions } from '../api.js'
 import { useUser } from '../composables/user.js'
 import { destinations } from '../data/middleEast.js'
 import { useLocale } from '../composables/useLocale.js'
@@ -173,6 +201,7 @@ const { t, tm } = useLocale()
 const product = ref(null)
 const packages = ref([])
 const itinerary = ref([])
+const attractions = ref([])
 const selectedPackageId = ref('')
 const selectedDate = ref('')
 const selectedInventory = ref(null)
@@ -367,12 +396,14 @@ async function load() {
   loading.value = true
   try {
     product.value = await getProductDetail(route.params.id)
-    const [packageItems, itineraryItems] = await Promise.all([
+    const [packageItems, itineraryItems, attractionItems] = await Promise.all([
       getProductPackages(route.params.id).catch(() => []),
       getProductItineraryStops(route.params.id).catch(() => []),
+      getProductAttractions(route.params.id).catch(() => []),
     ])
     packages.value = packageItems.filter((item) => !item.status || item.status === 'ACTIVE')
     itinerary.value = itineraryItems
+    attractions.value = attractionItems
     if (packages.value.length) {
       selectedPackageId.value = String(packages.value[0].id)
       await loadInventoryWindow()

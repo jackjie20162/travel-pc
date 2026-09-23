@@ -126,6 +126,12 @@ export async function getProductItineraryStops(productId) {
   return pickList(data)
 }
 
+/** 查询某旅游路线（产品）行程节点绑定的景点（按行程顺序去重） */
+export async function getProductAttractions(productId) {
+  const data = await request(`/api/travel/products/${productId}/attractions`)
+  return pickList(data)
+}
+
 /** 批量查询某套餐日期范围内的库存（日历/日期条展示：date/unitPrice/currency/isOpen/capacity/reserved） */
 export async function batchInventory({ packageId, startDate, endDate }) {
   const params = new URLSearchParams({ startDate, endDate })
