@@ -2156,6 +2156,39 @@ button:disabled {
   padding: 12px 0;
 }
 
+.date-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.pager-btn {
+  border: 1px solid #d8dee8;
+  border-radius: 8px;
+  background: #fff;
+  color: #0f766e;
+  font-size: 12px;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+.pager-btn:hover:not(:disabled) {
+  border-color: #0f766e;
+  background: #f0fbfa;
+}
+
+.pager-btn:disabled {
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.pager-range {
+  color: #64748b;
+  font-size: 12px;
+}
+
 .pc-stepper {
   display: flex;
   align-items: center;

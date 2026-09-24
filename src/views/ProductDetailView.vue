@@ -131,21 +131,29 @@
           <div class="panel-group">
             <span class="panel-group-title">{{ t('pc.product.selectDate') }}</span>
             <div v-if="inventoryLoading" class="date-loading">{{ t('pc.product.dateLoading') }}</div>
-            <div v-else class="pc-date-strip">
-              <button
-                v-for="d in dateStrip"
-                :key="d.dateStr"
-                type="button"
-                class="date-cell"
-                :class="{ selected: selectedDate === d.dateStr, unavailable: !d.available }"
-                :disabled="!d.available"
-                @click="selectDate(d.dateStr)"
-              >
-                <span class="dc-weekday">{{ d.weekday }}</span>
-                <span class="dc-day">{{ d.day }}</span>
-                <span class="dc-price">{{ d.price != null ? formatPrice(d.price, d.currency) : '·' }}</span>
-              </button>
-            </div>
+            <template v-else>
+              <div class="pc-date-strip">
+                <button
+                  v-for="d in dateStrip"
+                  :key="d.dateStr"
+                  type="button"
+                  class="date-cell"
+                  :class="{ selected: selectedDate === d.dateStr, unavailable: !d.available }"
+                  :disabled="!d.available"
+                  @click="selectDate(d.dateStr)"
+                >
+                  <span class="dc-weekday">{{ d.weekday }}</span>
+                  <span class="dc-day">{{ d.day }}</span>
+                  <span class="dc-price">{{ d.price != null ? formatPrice(d.price, d.currency) : '·' }}</span>
+                </button>
+              </div>
+              <p v-if="!dateStrip.length" class="date-loading">{{ t('pc.product.datePageEmpty') }}</p>
+              <div class="date-pager">
+                <button type="button" class="pager-btn" :disabled="!canPrevPage" @click="prevPage">‹ {{ t('pc.product.datePrevPage') }}</button>
+                <span class="pager-range">{{ pageRangeText }}</span>
+                <button type="button" class="pager-btn" :disabled="!canNextPage" @click="nextPage">{{ t('pc.product.dateNextPage') }} ›</button>
+              </div>
+            </template>
             <p v-if="selectedInventory" class="dc-hint">
               {{ t('pc.product.remainingHint', { remaining, max: maxQty }) }}
             </p>
@@ -211,6 +219,11 @@ const inventoryLoading = ref(false)
 
 /** 库存缓存: { dateStr: inventoryItem }，字段与 batchInventory 返回一致 */
 const inventoryCache = ref({})
+
+/** 日期条分页：每页 14 天，一次性拉取今天起 90 天库存窗口 */
+const PAGE_DAYS = 14
+const WINDOW_DAYS = 90
+const dateOffset = ref(0)
 
 const WEEKDAYS = computed(() => {
   const days = tm('pc.product.weekday')
@@ -282,56 +295,109 @@ const totalText = computed(() => {
   return formatPrice(unit * quantity.value, selectedInventory.value?.currency || currency.value)
 })
 
-/** 生成日期条数据（今天起 14 天，与 travel-app 逻辑一致：无库存记录不代表不可订，isOpen=false 才置灰） */
+/** 本地时区日期串，避免 toISOString() 在 UTC+8 早上偏移一天 */
+function localDateStr(d) {
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${m}-${day}`
+}
+
+/** 今天 + offset 天的本地零点 */
+function dateAtOffset(offset) {
+  const d = new Date()
+  d.setHours(0, 0, 0, 0)
+  d.setDate(d.getDate() + offset)
+  return d
+}
+
+/** 生成日期条数据：从当天开始按页展示，不可订（isOpen=false）的日期直接跳过不显示 */
 const dateStrip = computed(() => {
   const days = []
-  const today = new Date()
-  for (let i = 0; i < 14; i++) {
-    const d = new Date(today)
-    d.setDate(today.getDate() + i)
-    const dateStr = d.toISOString().split('T')[0]
+  for (let i = dateOffset.value; i < dateOffset.value + PAGE_DAYS; i++) {
+    const d = dateAtOffset(i)
+    const dateStr = localDateStr(d)
     const inv = inventoryCache.value[dateStr]
-    const available = !!selectedPackageId.value && (!inv || inv.isOpen !== false)
+    if (inv && inv.isOpen === false) continue
     days.push({
       dateStr,
       weekday: WEEKDAYS.value[d.getDay()],
       day: d.getDate(),
       price: inv ? inv.unitPrice : null,
       currency: inv ? inv.currency : null,
-      available,
+      available: !!selectedPackageId.value,
     })
   }
   return days
 })
 
-const canBook = computed(() => !!selectedPackageId.value && !!selectedDate.value && quantity.value > 0)
+const canPrevPage = computed(() => dateOffset.value > 0)
+const canNextPage = computed(() => dateOffset.value + PAGE_DAYS < WINDOW_DAYS)
 
-function todayStr() {
-  return new Date().toISOString().split('T')[0]
+const pageRangeText = computed(() => {
+  const fmt = (d) => `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  return `${fmt(dateAtOffset(dateOffset.value))} ~ ${fmt(dateAtOffset(dateOffset.value + PAGE_DAYS - 1))}`
+})
+
+function prevPage() {
+  if (canPrevPage.value) dateOffset.value = Math.max(0, dateOffset.value - PAGE_DAYS)
 }
 
-/** 加载所选套餐今天起 30 天的库存窗口 */
+function nextPage() {
+  if (canNextPage.value) dateOffset.value += PAGE_DAYS
+}
+
+/** 今天起窗口内第一个可订日期（跳过已关闭的日期） */
+function firstBookableDate() {
+  for (let i = 0; i < WINDOW_DAYS; i++) {
+    const dateStr = localDateStr(dateAtOffset(i))
+    const inv = inventoryCache.value[dateStr]
+    if (!inv || inv.isOpen !== false) return dateStr
+  }
+  return ''
+}
+
+function offsetOfDate(dateStr) {
+  return Math.round((new Date(`${dateStr}T00:00:00`) - dateAtOffset(0)) / 86400000)
+}
+
+/** 将指定日期所在页翻到当前 */
+function jumpToPageOf(dateStr) {
+  const idx = offsetOfDate(dateStr)
+  if (idx >= 0) dateOffset.value = Math.floor(idx / PAGE_DAYS) * PAGE_DAYS
+}
+
+function isBookable(dateStr) {
+  const idx = offsetOfDate(dateStr)
+  if (idx < 0 || idx >= WINDOW_DAYS) return false
+  const inv = inventoryCache.value[dateStr]
+  return !inv || inv.isOpen !== false
+}
+
+const canBook = computed(() => !!selectedPackageId.value && !!selectedDate.value && quantity.value > 0)
+
+/** 加载所选套餐今天起 WINDOW_DAYS 天的库存窗口 */
 async function loadInventoryWindow() {
   if (!selectedPackageId.value) return
   inventoryLoading.value = true
   inventoryCache.value = {}
   selectedInventory.value = null
   selectedDate.value = ''
-  const start = new Date()
-  const end = new Date()
-  end.setDate(start.getDate() + 30)
+  dateOffset.value = 0
   try {
     const items = await batchInventory({
       packageId: selectedPackageId.value,
-      startDate: start.toISOString().split('T')[0],
-      endDate: end.toISOString().split('T')[0],
+      startDate: localDateStr(dateAtOffset(0)),
+      endDate: localDateStr(dateAtOffset(WINDOW_DAYS - 1)),
     })
     const cache = {}
     for (const item of items) cache[item.date] = item
     inventoryCache.value = cache
-    // 默认选中最近可订日期
-    const first = dateStrip.value.find((d) => d.available)
-    if (first) selectDate(first.dateStr)
+    // 默认选中今天之后最近的可订日期，并把该日期翻到可见页
+    const first = firstBookableDate()
+    if (first) {
+      jumpToPageOf(first)
+      selectDate(first)
+    }
   } catch (error) {
     console.error('加载库存失败', error)
   } finally {
@@ -422,21 +488,28 @@ function applyRouteQuery() {
   const { pkg, date } = route.query
   if (pkg && packages.value.some((p) => String(p.id) === String(pkg))) {
     if (String(pkg) !== selectedPackageId.value) {
-      const target = packages.value.find((p) => String(p.id) === String(pkg))
       selectedPackageId.value = String(pkg)
       loadInventoryWindow().then(() => {
-        if (date && inventoryCache.value[date]) selectDate(date)
+        if (date && isBookable(date)) {
+          jumpToPageOf(date)
+          selectDate(date)
+        }
       })
       return
     }
   }
-  if (date && selectedDate.value !== date) {
-    const target = dateStrip.value.find((d) => d.dateStr === date && d.available)
-    if (target) selectDate(date)
+  if (date && selectedDate.value !== date && isBookable(date)) {
+    jumpToPageOf(date)
+    selectDate(date)
+    return
   }
-  // 兜底：确保 selectedDate 至少落在今天之后
-  if (!selectedDate.value && dateStrip.value.some((d) => d.available)) {
-    selectDate(dateStrip.value.find((d) => d.available && d.dateStr >= todayStr()).dateStr)
+  // 兜底：确保默认落在今天之后最近的可订日期
+  if (!selectedDate.value) {
+    const first = firstBookableDate()
+    if (first) {
+      jumpToPageOf(first)
+      selectDate(first)
+    }
   }
 }
 
