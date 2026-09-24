@@ -310,21 +310,29 @@ function dateAtOffset(offset) {
   return d
 }
 
-/** 生成日期条数据：从当天开始按页展示，不可订（isOpen=false）的日期直接跳过不显示 */
+/** 判断某日期是否有可订库存：必须有库存记录、处于开放状态且余量>0；无记录=未设置=不可订 */
+function bookableInventory(dateStr) {
+  const inv = inventoryCache.value[dateStr]
+  if (!inv || inv.isOpen === false) return null
+  if ((inv.capacity ?? 0) - (inv.reserved ?? 0) <= 0) return null
+  return inv
+}
+
+/** 生成日期条数据：从当天开始按页展示，仅展示真正设置了可订库存的日期（无记录/已关闭/无余量均不显示） */
 const dateStrip = computed(() => {
   const days = []
   for (let i = dateOffset.value; i < dateOffset.value + PAGE_DAYS; i++) {
     const d = dateAtOffset(i)
     const dateStr = localDateStr(d)
-    const inv = inventoryCache.value[dateStr]
-    if (inv && inv.isOpen === false) continue
+    const inv = bookableInventory(dateStr)
+    if (!inv) continue
     days.push({
       dateStr,
       weekday: WEEKDAYS.value[d.getDay()],
       day: d.getDate(),
-      price: inv ? inv.unitPrice : null,
-      currency: inv ? inv.currency : null,
-      available: !!selectedPackageId.value,
+      price: inv.unitPrice,
+      currency: inv.currency,
+      available: true,
     })
   }
   return days
@@ -346,12 +354,11 @@ function nextPage() {
   if (canNextPage.value) dateOffset.value += PAGE_DAYS
 }
 
-/** 今天起窗口内第一个可订日期（跳过已关闭的日期） */
+/** 今天起窗口内第一个可订日期（必须有可订库存记录） */
 function firstBookableDate() {
   for (let i = 0; i < WINDOW_DAYS; i++) {
     const dateStr = localDateStr(dateAtOffset(i))
-    const inv = inventoryCache.value[dateStr]
-    if (!inv || inv.isOpen !== false) return dateStr
+    if (bookableInventory(dateStr)) return dateStr
   }
   return ''
 }
@@ -369,8 +376,7 @@ function jumpToPageOf(dateStr) {
 function isBookable(dateStr) {
   const idx = offsetOfDate(dateStr)
   if (idx < 0 || idx >= WINDOW_DAYS) return false
-  const inv = inventoryCache.value[dateStr]
-  return !inv || inv.isOpen !== false
+  return !!bookableInventory(dateStr)
 }
 
 const canBook = computed(() => !!selectedPackageId.value && !!selectedDate.value && quantity.value > 0)
