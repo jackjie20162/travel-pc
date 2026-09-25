@@ -26,9 +26,13 @@ export function getSupportTarget() {
   return { toType: IM_USER_TYPE.MERCHANT, toBizUid: Number(getMerchantId() || 0) }
 }
 
-// IM 网关 WebSocket 基址（默认本地 9281，生产用 VITE_IM_WS_URL 覆盖）
+// IM 网关 WebSocket 基址：优先 VITE_IM_WS_URL；默认按当前页面 origin 拼同源 /ws，
+// 生产由 nginx、开发由 vite proxy 转发到 im-gateway:9281，无需独立 IM 域名
 export function getImWsBase() {
-  return import.meta.env.VITE_IM_WS_URL || 'ws://127.0.0.1:9281/ws'
+  const configured = import.meta.env.VITE_IM_WS_URL
+  if (configured) return configured
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:'
+  return `${proto}//${location.host}/ws`
 }
 
 // 拼接鉴权 query：浏览器 WebSocket 无法自定义 Header，用 query 传身份
