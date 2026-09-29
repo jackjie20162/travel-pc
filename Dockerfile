@@ -7,7 +7,8 @@
 #
 # 对应 k8s 清单：deploy/kubernetes/frontend/travel-pc.yaml
 
-FROM nginx:1.29-alpine
+# 基座：docker.io 官方 nginx 因 aliyun 加速器 403 拉不动；借本机已含标准 nginx 的 fms-api:v4
+FROM registry.cn-hangzhou.aliyuncs.com/zifeng6257/fms-api:v4
 
 # 本地 vite build 产物
 COPY dist/ /usr/share/nginx/html/
@@ -15,3 +16,6 @@ COPY dist/ /usr/share/nginx/html/
 COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
+
+# 覆盖 fms 自带入口，仅前台运行 nginx
+ENTRYPOINT ["nginx", "-g", "daemon off;"]
