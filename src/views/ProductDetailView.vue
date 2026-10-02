@@ -54,9 +54,9 @@
             <h2>{{ t('pc.product.itinerary') }}</h2>
             <div class="timeline">
               <div v-for="(stop, index) in itinerary" :key="stop.id || index" class="timeline-item">
-                <span class="timeline-number">{{ index + 1 }}</span>
+                <span class="timeline-icon" :title="stopLabel(stop, index)">{{ stopIcon(stop) }}</span>
                 <div>
-                  <strong>{{ stop.title || stop.pointName || stop.name || t('pc.product.stopDefault', { index: index + 1 }) }}</strong>
+                  <strong>{{ stopLabel(stop, index) }}</strong>
                   <p>{{ stop.description || stop.desc || stop.duration || t('pc.product.itineraryFallback') }}</p>
                 </div>
               </div>
@@ -70,8 +70,8 @@
                 <img v-if="a.coverImage" class="attraction-img" :src="a.coverImage" :alt="a.name" />
                 <div v-else class="attraction-img attraction-img-empty"></div>
                 <div class="attraction-body">
-                  <strong class="attraction-name">{{ a.name }}</strong>
-                  <span v-if="a.nameEn" class="attraction-en">{{ a.nameEn }}</span>
+                  <strong class="attraction-name">{{ attractionName(a) }}</strong>
+                  <span v-if="attractionNameAlt(a)" class="attraction-en">{{ attractionNameAlt(a) }}</span>
                   <p v-if="a.description" class="attraction-desc">{{ a.description }}</p>
                   <ul class="attraction-meta">
                     <li v-if="a.city || a.address">📍 {{ [a.city, a.address].filter(Boolean).join(' · ') }}</li>
@@ -204,7 +204,7 @@ import { imOpenSupport } from '../plugin/im/imStore'
 const route = useRoute()
 const router = useRouter()
 const user = useUser()
-const { t, tm } = useLocale()
+const { t, tm, te, locale } = useLocale()
 
 const product = ref(null)
 const packages = ref([])
@@ -462,6 +462,59 @@ function consultSupport() {
       destination: destinationName.value,
     },
   })
+}
+
+/* ── 行程节点：类型图标 + 多语言标签 ── */
+const stopTypeIcons = { MEETING: '🚩', ACTIVITY: '📍', TRANSPORT: '🚌', MEAL: '🍽️', RETURN: '🏁' }
+const mealIcons = { BREAKFAST: '🥣', LUNCH: '🍽️', DINNER: '🌙', AFTERNOON_TEA: '🫖', MIDNIGHT_SNACK: '🌃', MORNING_TEA: '🍵' }
+
+/** 解析行程节点的 typeParams（JSON 字符串） */
+function stopTp(stop) {
+  const raw = stop?.typeParams
+  if (!raw) return {}
+  try {
+    return typeof raw === 'string' ? JSON.parse(raw) : raw
+  } catch {
+    return {}
+  }
+}
+
+/** 行程节点图标：餐食按早/午/晚细分，其余按类型 */
+function stopIcon(stop) {
+  if (stop.stopType === 'MEAL') {
+    return mealIcons[stopTp(stop).mealType] || stopTypeIcons.MEAL
+  }
+  return stopTypeIcons[stop.stopType] || stopTypeIcons.ACTIVITY
+}
+
+/** 行程节点标题：结构化类型走多语言标签，景点展示实际名称 */
+function stopLabel(stop, index) {
+  switch (stop.stopType) {
+    case 'ACTIVITY':
+      return stop.poiName || stop.title || t('pc.product.stopType.ACTIVITY')
+    case 'MEAL': {
+      const mt = stopTp(stop).mealType
+      return mt && te('pc.product.meal.' + mt) ? t('pc.product.meal.' + mt) : t('pc.product.stopType.MEAL')
+    }
+    case 'MEETING':
+    case 'TRANSPORT':
+    case 'RETURN':
+      return t('pc.product.stopType.' + stop.stopType)
+    default:
+      return stop.title || stop.pointName || stop.name || t('pc.product.stopDefault', { index: index + 1 })
+  }
+}
+
+/** 景点名称：中文环境显示中文名，其余语言优先英文名（缺失时回退） */
+function attractionName(a) {
+  if (!a.nameEn) return a.name
+  return locale.value === 'zh-CN' ? a.name : a.nameEn
+}
+
+/** 景点次要名称：显示另一种语言，便于对照 */
+function attractionNameAlt(a) {
+  if (!a.nameEn) return ''
+  return locale.value === 'zh-CN' ? a.nameEn : a.name
 }
 
 async function load() {
