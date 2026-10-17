@@ -25,7 +25,9 @@ The catalog page reads real data from `GET /api/travel/products`; no product pri
 - `#/attractions` 景点列表：`GET /api/travel/attractions?page=&pageSize=&keyword=&category=`，左侧按关键词 + 分类（NATURE/HISTORY/THEME_PARK/MUSEUM/RELIGION/SHOPPING/OTHER）筛选，筛选条件同步到 URL query（刷新/分享可复现），分页每页 12 条。
 - `#/attractions/:id` 景点详情：`GET /api/travel/attractions/:id` + `GET /api/travel/attractions/:id/products`（后者返回行程节点绑定了该景点的 **PUBLISHED** 线路，按起价升序），页面罗列图集、景点信息与「包含该景点的线路」产品卡。
 - 景点 ↔ 线路的绑定关系存在后端 `itinerary_stops.type_params` JSON 的 `attractionId` 字段，由商户后台「旅游插件 → 产品 → 行程编排」在活动节点上选景点写入；产品详情页「途经景点」卡片也可点击跳转到对应景点详情。
-- 公开接口只返回 `status=ACTIVE` 的景点；本地测试数据在 tenant 2 / merchant 1，迪拜 32 个景点及演示绑定见 `travel-rpc/docs/sql/dubai_attractions_import.sql`、`dubai_attractions_images.sql`、`dubai_attractions_demo_route_binding.sql`。
+- 公开接口只返回 `status=ACTIVE` 的景点；本地测试数据在 tenant 2 / merchant 1，迪拜 32 个景点及演示绑定见 `travel-rpc/docs/sql/dubai_attractions_import.sql`、`dubai_attractions_images.sql`、`dubai_attractions_images_topup.sql`、`dubai_attractions_demo_route_binding.sql`。
+- 图集张数：每个景点 6 张（`dubai_attractions_images_topup.sql` 将原先的 3 张补齐到 6 张，共 192 张）；景点详情页展示「1 张大图 + 4 张缩略」。
+- 线路主图兜底：产品（线路）自身 `cover_image` 为空时，公开接口自动取行程绑定景点的封面图（按行程顺序取第一个有图的景点；景点无封面则取图集第一张），商户设置了主图则优先用商户的图。商户后台列表不兜底，方便发现未设主图的产品。
 
 ## Status
 
