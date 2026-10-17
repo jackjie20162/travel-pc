@@ -19,6 +19,7 @@
         <RouterLink to="/destinations/dubai">{{ t('pc.nav.dubai') }}</RouterLink>
         <RouterLink to="/destinations/abu-dhabi">{{ t('pc.nav.abuDhabi') }}</RouterLink>
         <RouterLink to="/destinations/doha">{{ t('pc.nav.doha') }}</RouterLink>
+        <RouterLink to="/attractions">{{ t('pc.nav.attractions') }}</RouterLink>
         <select v-model="localeCode" class="nav-currency" :title="t('pc.nav.currencyTitle')" @change="onLocaleChange">
           <option v-for="l in supportedLocales" :key="l" :value="l">{{ localeLabels[l] }}</option>
         </select>
@@ -57,6 +58,7 @@
         <a href="#top">{{ t('pc.footer.backToTop') }}</a>
         <RouterLink to="/destinations/dubai">{{ t('pc.footer.exploreDubai') }}</RouterLink>
         <RouterLink to="/destinations/abu-dhabi">{{ t('pc.footer.exploreAbuDhabi') }}</RouterLink>
+        <RouterLink to="/attractions">{{ t('pc.footer.browseAttractions') }}</RouterLink>
       </div>
     </footer>
 

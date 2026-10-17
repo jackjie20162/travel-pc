@@ -73,7 +73,7 @@
             </div>
             <div class="activity-price">
               <span>{{ t('pc.destination.fromPerPerson') }}</span>
-              <strong>{{ productCurrency(product) }} {{ formatPrice(productPrice(product)) }}</strong>
+              <strong>{{ formatPrice(productPrice(product), productCurrency(product)) }}</strong>
               <button type="button">{{ t('pc.destination.viewDetail') }}</button>
             </div>
           </article>

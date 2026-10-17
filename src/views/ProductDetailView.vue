@@ -66,7 +66,12 @@
           <section v-if="attractions.length" class="detail-section">
             <h2>{{ t('pc.product.attractions') }}</h2>
             <div class="attraction-grid">
-              <article v-for="a in attractions" :key="a.id" class="attraction-card">
+              <article
+                v-for="a in attractions"
+                :key="a.id"
+                class="attraction-card attraction-card-link"
+                @click="openAttraction(a)"
+              >
                 <img v-if="a.coverImage" class="attraction-img" :src="a.coverImage" :alt="a.name" />
                 <div v-else class="attraction-img attraction-img-empty"></div>
                 <div class="attraction-body">
@@ -515,6 +520,12 @@ function attractionName(a) {
 function attractionNameAlt(a) {
   if (!a.nameEn) return ''
   return locale.value === 'zh-CN' ? a.nameEn : a.name
+}
+
+/** 跳转景点详情页（含该景点关联线路） */
+function openAttraction(a) {
+  if (!a?.id) return
+  router.push({ name: 'AttractionDetail', params: { id: a.id } })
 }
 
 async function load() {

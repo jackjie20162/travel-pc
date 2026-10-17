@@ -902,6 +902,33 @@ button:disabled {
   background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
 }
 
+/* 可点击跳转景点详情的卡片（景点列表页 / 产品详情途经景点共用） */
+.attraction-card-link {
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.attraction-card-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.12);
+}
+
+.attraction-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.attraction-tags span {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f0fdfa;
+  color: #0f766e;
+  font-size: 11px;
+  font-weight: 700;
+}
+
 .attraction-body {
   padding: 12px 14px 14px;
 }

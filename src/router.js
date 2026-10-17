@@ -14,6 +14,8 @@ if (paypalReturnQuery && /(token=.*PayerID=|cancel=|paymentNO=)/i.test(paypalRet
 const routes = [
   { path: '/', name: 'Home', component: HomeView },
   { path: '/destinations/:slug?', name: 'Destination', component: DestinationView },
+  { path: '/attractions', name: 'Attractions', component: () => import('./views/AttractionsView.vue') },
+  { path: '/attractions/:id', name: 'AttractionDetail', component: () => import('./views/AttractionDetailView.vue') },
   { path: '/products/:id', name: 'ProductDetail', component: ProductDetailView },
   { path: '/booking', name: 'Booking', component: () => import('./views/BookingView.vue'), meta: { requiresAuth: true } },
   { path: '/payment', name: 'Payment', component: () => import('./views/PaymentView.vue'), meta: { requiresAuth: true } },

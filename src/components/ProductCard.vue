@@ -14,7 +14,7 @@
       </div>
       <div class="price-row">
         <span>{{ t('pc.product.fromPerPerson') }}</span>
-        <strong>{{ currency }} {{ priceText }}</strong>
+        <strong>{{ priceText }}</strong>
       </div>
     </div>
   </article>
@@ -47,5 +47,6 @@ const destination = computed(() => productDestination(props.product))
 const description = computed(() => productDescription(props.product))
 const cover = computed(() => productCover(props.product, props.fallbackImage))
 const currency = computed(() => productCurrency(props.product))
-const priceText = computed(() => formatPrice(productPrice(props.product)))
+// 价格自身币种作为换算基准（后端 minPrice 跟随商品 currency），避免币种代码与符号重复展示
+const priceText = computed(() => formatPrice(productPrice(props.product), currency.value))
 </script>

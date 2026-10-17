@@ -132,6 +132,33 @@ export async function getProductAttractions(productId) {
   return pickList(data)
 }
 
+/* ── 景点 ── */
+
+/** 公开景点列表：后端默认只返回 ACTIVE 景点 */
+export async function getAttractions({ keyword, category, page = 1, pageSize = 24 } = {}) {
+  const params = new URLSearchParams()
+  if (keyword) params.set('keyword', keyword)
+  if (category) params.set('category', category)
+  params.set('page', String(page))
+  params.set('pageSize', String(pageSize))
+  const data = await request(`/api/travel/attractions?${params}`)
+  return {
+    raw: data,
+    items: pickList(data),
+    total: data?.total || data?.data?.total || pickList(data).length,
+  }
+}
+
+export function getAttractionDetail(id) {
+  return request(`/api/travel/attractions/${id}`)
+}
+
+/** 景点关联线路：行程中包含该景点的已发布产品（按最低价升序） */
+export async function getAttractionProducts(id) {
+  const data = await request(`/api/travel/attractions/${id}/products`)
+  return pickList(data)
+}
+
 /** 批量查询某套餐日期范围内的库存（日历/日期条展示：date/unitPrice/currency/isOpen/capacity/reserved） */
 export async function batchInventory({ packageId, startDate, endDate }) {
   const params = new URLSearchParams({ startDate, endDate })
