@@ -10,7 +10,7 @@
           <div class="detail-meta">
             <span v-if="attraction.city">📍 {{ attraction.city }}</span>
             <span v-if="attraction.category">{{ categoryLabel }}</span>
-            <span v-if="nameEn && locale !== 'zh-CN'">{{ attraction.name }}</span>
+            <span v-if="nameAlt">{{ nameAlt }}</span>
           </div>
         </div>
       </section>
@@ -96,6 +96,13 @@ let loadSeq = 0
 
 const title = computed(() => attractionTitle(attraction.value, locale.value))
 const nameEn = computed(() => attraction.value?.nameEn || '')
+// 副标题对照名：后端已按语言解析 name，仅中文界面额外展示英文名作参考；
+// 英/阿模式下 title 已是本地化名，不再重复展示。
+const nameAlt = computed(() => {
+  const a = attraction.value
+  if (!a || locale.value !== 'zh-CN') return ''
+  return nameEn.value && nameEn.value !== a.name ? nameEn.value : ''
+})
 const tags = computed(() => attractionTags(attraction.value))
 const coords = computed(() => attractionCoords(attraction.value))
 const categoryLabel = computed(() => {
