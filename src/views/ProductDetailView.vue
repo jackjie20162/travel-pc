@@ -510,16 +510,17 @@ function stopLabel(stop, index) {
   }
 }
 
-/** 景点名称：中文环境显示中文名，其余语言优先英文名（缺失时回退） */
+/** 景点名称：后端已按请求语言解析 a.name（中/英/阿）；
+ *  若某景点尚未翻译（a.name 仍为中文）则非中文环境回退英文名 */
 function attractionName(a) {
-  if (!a.nameEn) return a.name
-  return locale.value === 'zh-CN' ? a.name : a.nameEn
+  if (locale.value === 'zh-CN' || !a.nameEn) return a.name
+  return /[\u4e00-\u9fff]/.test(a.name) ? a.nameEn : a.name
 }
 
-/** 景点次要名称：显示另一种语言，便于对照 */
+/** 景点次要名称：中文环境显示英文名做对照，其余语言不重复展示 */
 function attractionNameAlt(a) {
   if (!a.nameEn) return ''
-  return locale.value === 'zh-CN' ? a.nameEn : a.name
+  return locale.value === 'zh-CN' ? a.nameEn : ''
 }
 
 /** 跳转景点详情页（含该景点关联线路） */
