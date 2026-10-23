@@ -9,11 +9,12 @@
  * - Authorization: Bearer <token>：登录后携带
  */
 
+import { getCurrentLocale } from './locales/index.js'
+
 const STORAGE_TENANT = 'travel_tenant_id'
 const STORAGE_MERCHANT = 'travel_merchant_id'
 const STORAGE_TOKEN = 'travel_user_token'
 const STORAGE_USER = 'travel_user_info'
-const STORAGE_LOCALE = 'travel_locale'
 const STORAGE_CURRENCY = 'travel_currency'
 
 // 统一使用相对路径：开发环境由 vite proxy 转发（/api -> travel-api），生产环境同源 nginx 反代，
@@ -31,7 +32,9 @@ export function getMerchantId() {
 }
 
 export function getLocale() {
-  return localStorage.getItem(STORAGE_LOCALE) || 'zh-CN'
+  // 单一来源：当前 i18n 界面语言。此前读 'travel_locale' 而语言切换写入 'travel_pc_locale'，
+  // 两个 key 不一致导致 Accept-Language 永远回退 'zh-CN'，后端不解析译文，C 端一直显中文。
+  return getCurrentLocale()
 }
 
 export function getDisplayCurrency() {

@@ -79,4 +79,9 @@ export function currentIntlLocale() {
   return INTL_LOCALE_MAP[i18n.global.locale.value] || 'en-US'
 }
 
+/** 当前界面语言（供 api.js 注入 Accept-Language，与 i18n 单一来源，避免 key/默认值不一致）。 */
+export function getCurrentLocale() {
+  return i18n.global.locale.value
+}
+
 export default i18n
