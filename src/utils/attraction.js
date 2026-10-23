@@ -5,11 +5,15 @@
 import { resolveMediaUrl } from './media.js'
 import { splitCsv } from './product.js'
 
-/** 景点名称：非中文语言优先展示英文名。 */
+/** 景点名称：后端已按请求语言解析 name（中/英/阿）；
+ * 若拿到的仍是中文（旧数据无译文）且非中文环境，回退英文名。 */
 export function attractionTitle(attraction, locale) {
   if (!attraction) return ''
-  if (locale && locale !== 'zh-CN' && attraction.nameEn) return attraction.nameEn
-  return attraction.name || attraction.nameEn || ''
+  const name = attraction.name || attraction.nameEn || ''
+  if (locale && locale !== 'zh-CN' && /[\u4e00-\u9fff]/.test(name)) {
+    return attraction.nameEn || name
+  }
+  return name
 }
 
 export function attractionCover(attraction, fallback = '') {
