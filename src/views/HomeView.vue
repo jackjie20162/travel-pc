@@ -85,7 +85,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import ProductCard from '../components/ProductCard.vue'
 import { getProducts } from '../api.js'
@@ -93,7 +93,7 @@ import { destinations, themes, trustKeys } from '../data/middleEast.js'
 import { useLocale } from '../composables/useLocale.js'
 
 const router = useRouter()
-const { t } = useLocale()
+const { t, locale } = useLocale()
 const keyword = ref('')
 const products = ref([])
 const loading = ref(false)
@@ -126,6 +126,9 @@ async function loadProducts() {
     loading.value = false
   }
 }
+
+// 切换语言时按新 locale 重拉商品，后端按 Accept-Language 解析产品名/描述等译文
+watch(locale, () => loadProducts())
 
 onMounted(loadProducts)
 </script>

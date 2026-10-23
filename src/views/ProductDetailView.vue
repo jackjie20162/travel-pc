@@ -186,7 +186,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { batchInventory, getProductDetail, getProductItineraryStops, getProductPackages, getProductAttractions } from '../api.js'
 import { useUser } from '../composables/user.js'
@@ -583,6 +583,9 @@ function applyRouteQuery() {
     }
   }
 }
+
+// 切换语言时按新 locale 重拉产品/套餐/行程/景点，后端按 Accept-Language 解析各字段译文
+watch(locale, () => load())
 
 onMounted(load)
 </script>

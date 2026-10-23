@@ -101,7 +101,7 @@ import {
 
 const route = useRoute()
 const router = useRouter()
-const { t } = useLocale()
+const { t, locale } = useLocale()
 const keyword = ref(route.query.keyword || '')
 const selectedDestination = ref(route.params.slug || 'dubai')
 const products = ref([])
@@ -159,6 +159,9 @@ watch(
     loadProducts()
   },
 )
+
+// 切换语言时按新 locale 重拉商品，后端按 Accept-Language 解析产品名/描述等译文
+watch(locale, () => loadProducts())
 
 onMounted(loadProducts)
 </script>

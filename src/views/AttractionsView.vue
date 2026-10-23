@@ -169,6 +169,9 @@ watch(
   },
 )
 
+// 切换界面语言时按新 locale 重新取数：后端按 Accept-Language 解析译文，不重拉会残留上一语言的数据
+watch(locale, () => load())
+
 onMounted(load)
 </script>
 

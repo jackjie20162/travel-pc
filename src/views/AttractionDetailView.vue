@@ -159,6 +159,8 @@ async function loadAll() {
 }
 
 watch(() => route.params.id, loadAll)
+// 切换语言时按新 locale 重拉详情与关联线路，避免残留上一语言数据
+watch(locale, () => loadAll())
 onMounted(loadAll)
 </script>
 
