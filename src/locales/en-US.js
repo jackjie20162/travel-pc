@@ -60,6 +60,7 @@ export default {
       exploreDubai: 'Explore Dubai',
       exploreAbuDhabi: 'Explore Abu Dhabi',
       browseAttractions: 'Browse attractions',
+      whatsapp: 'WhatsApp Support',
     },
     home: {
       eyebrow: 'Middle East travel marketplace',

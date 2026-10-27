@@ -64,6 +64,7 @@ export default {
       exploreDubai: '探索迪拜',
       exploreAbuDhabi: '探索阿布扎比',
       browseAttractions: '浏览景点',
+      whatsapp: 'WhatsApp 客服',
     },
     home: {
       eyebrow: 'Middle East travel marketplace',

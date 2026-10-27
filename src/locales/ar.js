@@ -60,6 +60,7 @@ export default {
       exploreDubai: 'استكشف دبي',
       exploreAbuDhabi: 'استكشف أبوظبي',
       browseAttractions: 'تصفح المعالم السياحية',
+      whatsapp: 'دعم واتساب',
     },
     home: {
       eyebrow: 'Middle East travel marketplace',

@@ -53,6 +53,15 @@
       <div>
         <strong>{{ t('pc.brand') }}</strong>
         <p>{{ t('pc.footer.desc') }}</p>
+        <a
+          class="footer-whatsapp"
+          :href="WHATSAPP_URL"
+          target="_blank"
+          rel="noopener"
+          style="display:inline-block;margin-top:8px;color:#25d366;font-weight:600;text-decoration:none"
+        >
+          {{ t('pc.footer.whatsapp') }}：{{ WHATSAPP_NUMBER }}
+        </a>
       </div>
       <div class="footer-links">
         <a href="#top">{{ t('pc.footer.backToTop') }}</a>
@@ -83,6 +92,10 @@ const keyword = ref(route.query.keyword || '')
 const currencyCode = ref(selectedCurrency.value)
 const currencyList = currencies
 const localeCode = ref(locale.value)
+
+// WhatsApp 客服联系方式（全站页脚与客服抽屉共用）
+const WHATSAPP_NUMBER = '+971502253577'
+const WHATSAPP_URL = 'https://wa.me/971502253577'
 
 watch(
   () => route.query.keyword,

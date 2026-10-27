@@ -10,6 +10,16 @@
         <button type="button" class="im-close" title="关闭" @click="close">×</button>
       </header>
 
+      <a
+        class="im-whatsapp"
+        :href="WHATSAPP_URL"
+        target="_blank"
+        rel="noopener"
+        style="display:block;padding:8px 16px;background:#dcf8c6;color:#075e54;font-size:13px;font-weight:600;text-decoration:none;border-bottom:1px solid #e0e0e0"
+      >
+        WhatsApp 客服：{{ WHATSAPP_NUMBER }}
+      </a>
+
       <!-- 多会话切换（客户一般只有商户客服一个会话） -->
       <div v-if="s.sessions.length > 1" class="im-sessions">
         <button
@@ -151,6 +161,10 @@ const router = useRouter()
 const draft = ref('')
 const scrollEl = ref(null)
 const preview = ref('')
+
+// WhatsApp 客服联系方式
+const WHATSAPP_NUMBER = '+971502253577'
+const WHATSAPP_URL = 'https://wa.me/971502253577'
 
 const connected = computed(() => s.status === 'online')
 // 断线也可发送（退回 HTTP 接口），故不再以 connected 作为发送前置
