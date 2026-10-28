@@ -65,7 +65,7 @@ export default {
     home: {
       eyebrow: 'Middle East travel marketplace',
       heroTitle: 'احجز تجارب الشرق الأوسط التي تستحق الرحلة',
-      heroCopy: 'تغطي دبي وأبوظبي والدوحة والرياض — من سفاري الصحراء إلى معالم المدينة، ابحث وقارن واحجز في مكان واحد.',
+      heroCopy: 'تغطي دبي وأبوظبي والدوحة والرياض وسقطرى — من سفاري الصحراء إلى مخيمات جزيرة دم الأخوين، ابحث وقارن واحجز في مكان واحد.',
       heroSearchPh: 'ما الذي تريد تجربته؟ مثل سفاري الصحراء، برج خليفة، يخت',
       search: 'بحث',
       exploreByDest: 'Explore by destination',
@@ -98,6 +98,7 @@ export default {
       'abu-dhabi': { name: 'أبوظبي', headline: 'الجامع واللوفر وعالم فيراري' },
       doha: { name: 'الدوحة', headline: 'مدينة ساحلية ومتاحم ومعسكرات الكثبان' },
       riyadh: { name: 'الرياض', headline: 'مدينة الشرق الأوسط الجديدة وثقافة نجد' },
+      socotra: { name: 'سقطرى', headline: 'أشجار دم الأخوين والكثبان البيضاء ومخيمات البحيرة' },
     },
     destination: {
       thingsToDo: 'Things to do in',

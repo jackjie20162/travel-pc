@@ -65,7 +65,7 @@ export default {
     home: {
       eyebrow: 'Middle East travel marketplace',
       heroTitle: 'Book the Middle East experiences worth the trip',
-      heroCopy: 'Covering Dubai, Abu Dhabi, Doha and Riyadh — from desert safari to city landmarks, search, compare and book in one place.',
+      heroCopy: 'Covering Dubai, Abu Dhabi, Doha, Riyadh and Socotra — from desert safari to dragon blood tree island camps, search, compare and book in one place.',
       heroSearchPh: 'What do you want to experience? e.g. desert safari, Burj Khalifa, yacht',
       search: 'Search',
       exploreByDest: 'Explore by destination',
@@ -98,6 +98,7 @@ export default {
       'abu-dhabi': { name: 'Abu Dhabi', headline: 'Mosque, Louvre & Ferrari World' },
       doha: { name: 'Doha', headline: 'Waterfront city, museums & dune camps' },
       riyadh: { name: 'Riyadh', headline: 'New Middle East city & Najd culture' },
+      socotra: { name: 'Socotra', headline: 'Dragon blood trees, white dunes & lagoon camps' },
     },
     destination: {
       thingsToDo: 'Things to do in',

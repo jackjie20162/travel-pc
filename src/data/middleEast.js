@@ -32,6 +32,13 @@ export const destinations = [
     country: 'Saudi Arabia',
     image: 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1200&q=80',
   },
+  {
+    // 也门索科特拉：name 必须与 products.destination 完全一致（后端 DestinationEQ 精确匹配）
+    slug: 'socotra',
+    name: 'Socotra',
+    country: 'Yemen',
+    image: 'https://travel-dubai.oss-me-east-1.aliyuncs.com/merchant/images/2026-10-27/1793112283364417600_img02_obj22.jpg',
+  },
 ]
 
 export const themes = [

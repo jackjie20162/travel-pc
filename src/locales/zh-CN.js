@@ -69,7 +69,7 @@ export default {
     home: {
       eyebrow: 'Middle East travel marketplace',
       heroTitle: '预订中东值得专程体验的活动',
-      heroCopy: '覆盖迪拜、阿布扎比、多哈与利雅得，从沙漠冲沙到城市地标，一站完成搜索、比价和下单。',
+      heroCopy: '覆盖迪拜、阿布扎比、多哈、利雅得与也门索科特拉，从沙漠冲沙到龙血树海岛露营，一站完成搜索、比价和下单。',
       heroSearchPh: '你想体验什么？例如 沙漠冲沙、哈利法塔、游艇',
       search: '搜索',
       exploreByDest: 'Explore by destination',
@@ -102,6 +102,7 @@ export default {
       'abu-dhabi': { name: '阿布扎比', headline: '清真寺、卢浮宫与法拉利世界' },
       doha: { name: '多哈', headline: '海滨城市、博物馆与沙丘营地' },
       riyadh: { name: '利雅得', headline: '新中东城市与纳季德文化' },
+      socotra: { name: '索科特拉', headline: '龙血树、白沙丘与泻湖露营' },
     },
     destination: {
       thingsToDo: 'Things to do in',
